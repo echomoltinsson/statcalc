@@ -393,6 +393,65 @@
         .footer a { color: var(--text-secondary); text-decoration: none; }
         .footer a:hover { text-decoration: underline; }
         
+        /* Example & Formula buttons */
+        .example-btns {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        
+        .example-btn {
+            background: var(--btn-secondary-bg);
+            color: var(--text-muted);
+            border: 1px dashed var(--btn-secondary-border);
+            padding: 4px 10px;
+            border-radius: 14px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .example-btn:hover { border-color: var(--input-focus); color: var(--input-focus); border-style: solid; }
+        
+        .formula-box {
+            background: var(--results-bg);
+            border: 1px solid var(--divider);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 12px;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            display: none;
+        }
+        
+        .formula-box.visible { display: block; }
+        
+        .formula-box .formula-title {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+        
+        .formula-toggle {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: color 0.2s;
+        }
+        
+        .formula-toggle:hover { color: var(--input-focus); }
+        
         /* Print styles */
         @media print {
             body { background: white; padding: 0; }
@@ -414,7 +473,8 @@
             }
             .calc-section { break-inside: avoid; border-color: #e2e8f0; }
             .calc-section:hover { transform: none; border-color: #e2e8f0; }
-            .btn, .btn-secondary, .copy-btn { display: none; }
+            .btn, .btn-secondary, .copy-btn, .example-btns, .formula-toggle { display: none; }
+            .formula-box { display: block !important; border-color: #e2e8f0; background: #f8fafc; }
             .results { background: #f8fafc; border-color: #e2e8f0; }
             .results.active { background: #f0fdf4; border-color: #10b981; }
             .footer { border-top: 1px solid #e2e8f0; }
@@ -448,12 +508,27 @@
                     <!-- Descriptive Statistics -->
                     <div class="calc-section">
                         <h3>📊 Descriptive Statistics</h3>
+                        <div class="example-btns">
+                            <span style="font-size:11px;color:var(--text-muted);align-self:center">Try:</span>
+                            <button class="example-btn" onclick="loadExample('desc-exam')">📝 Exam scores</button>
+                            <button class="example-btn" onclick="loadExample('desc-heights')">📏 Heights</button>
+                            <button class="example-btn" onclick="loadExample('desc-skewed')">📊 Skewed data</button>
+                        </div>
                         <div class="input-group">
                             <label for="data-input">Enter your data (comma-separated or one per line):</label>
                             <textarea id="data-input" placeholder="1.2, 2.3, 3.1&#10;4.2&#10;5.0, 6.1"></textarea>
                         </div>
                         <div class="btn-row">
                             <button class="btn" onclick="calculateDescriptive()">Calculate Stats</button>
+                            <button class="formula-toggle" onclick="toggleFormula('desc-formula')">📐 Show formulas</button>
+                        </div>
+                        <div id="desc-formula" class="formula-box">
+                            <div class="formula-title">Formulas Used</div>
+                            Mean: x̄ = Σxᵢ / n<br>
+                            Variance: s² = Σ(xᵢ − x̄)² / (n − 1)<br>
+                            Std Dev: s = √s²<br>
+                            Skewness: g₁ = [n/((n−1)(n−2))] · Σ[(xᵢ−x̄)/s]³<br>
+                            IQR: Q3 − Q1 (linear interpolation)
                         </div>
                         
                         <div id="descriptive-results" class="results">
@@ -476,6 +551,11 @@
                     <!-- Confidence Intervals -->
                     <div class="calc-section">
                         <h3>📏 Confidence Intervals</h3>
+                        <div class="example-btns">
+                            <span style="font-size:11px;color:var(--text-muted);align-self:center">Try:</span>
+                            <button class="example-btn" onclick="loadExample('ci-textbook')">📖 Textbook example</button>
+                            <button class="example-btn" onclick="loadExample('ci-small')">🔬 Small sample</button>
+                        </div>
                         <div class="input-group">
                             <label for="ci-mean">Sample Mean (x̄):</label>
                             <input type="number" id="ci-mean" step="any" placeholder="e.g., 23.5">
@@ -501,6 +581,14 @@
                         <div class="btn-row">
                             <button class="btn" onclick="calculateCI()">Calculate CI</button>
                             <button class="btn-secondary" onclick="fillCIFromDescriptive()">← Fill from descriptive</button>
+                            <button class="formula-toggle" onclick="toggleFormula('ci-formula')">📐 Show formulas</button>
+                        </div>
+                        <div id="ci-formula" class="formula-box">
+                            <div class="formula-title">Formulas Used</div>
+                            Standard Error: SE = s / √n<br>
+                            t-critical: t* from Student's t-distribution at df = n−1<br>
+                            Margin of Error: E = t* × SE<br>
+                            Confidence Interval: x̄ ± E = [x̄ − E, x̄ + E]
                         </div>
                         
                         <div id="ci-results" class="results">
@@ -522,6 +610,11 @@
                     <!-- One-Sample t-Test -->
                     <div class="calc-section">
                         <h3>🎯 One-Sample t-Test</h3>
+                        <div class="example-btns">
+                            <span style="font-size:11px;color:var(--text-muted);align-self:center">Try:</span>
+                            <button class="example-btn" onclick="loadExample('t1-sig')">✓ Significant result</button>
+                            <button class="example-btn" onclick="loadExample('t1-nonsig')">✗ Non-significant</button>
+                        </div>
                         <div class="input-row">
                             <div class="input-group">
                                 <label for="t-mean">Sample Mean (x̄):</label>
@@ -550,7 +643,17 @@
                                 <option value="right">Right-tailed (μ &gt; μ₀)</option>
                             </select>
                         </div>
+                        <div class="btn-row">
                         <button class="btn" onclick="calculateTTest()">Run t-Test</button>
+                        <button class="formula-toggle" onclick="toggleFormula('t1-formula')">📐 Show formulas</button>
+                        </div>
+                        <div id="t1-formula" class="formula-box">
+                            <div class="formula-title">Formulas Used</div>
+                            t-statistic: t = (x̄ − μ₀) / (s / √n)<br>
+                            Degrees of freedom: df = n − 1<br>
+                            Cohen's d: d = |x̄ − μ₀| / s<br>
+                            p-value from Student's t-distribution
+                        </div>
                         
                         <div id="ttest-results" class="results">
                             <button class="copy-btn" onclick="copyResults('ttest-results')">📋 Copy</button>
@@ -565,6 +668,11 @@
                     <!-- Two-Sample t-Test -->
                     <div class="calc-section">
                         <h3>⚖️ Two-Sample t-Test</h3>
+                        <div class="example-btns">
+                            <span style="font-size:11px;color:var(--text-muted);align-self:center">Try:</span>
+                            <button class="example-btn" onclick="loadExample('t2-drug')">💊 Drug trial</button>
+                            <button class="example-btn" onclick="loadExample('t2-equal')">🤝 Equal groups</button>
+                        </div>
                         <p class="helper-text" style="margin-bottom:16px">Compare means of two independent groups (Welch's t-test, unequal variances).</p>
                         <div class="input-group">
                             <label for="t2-data1">Group 1 data (comma-separated or one per line):</label>
@@ -582,7 +690,16 @@
                                 <option value="right">Right-tailed (μ₁ &gt; μ₂)</option>
                             </select>
                         </div>
+                        <div class="btn-row">
                         <button class="btn" onclick="calculateTwoSampleT()">Run t-Test</button>
+                        <button class="formula-toggle" onclick="toggleFormula('t2-formula')">📐 Show formulas</button>
+                        </div>
+                        <div id="t2-formula" class="formula-box">
+                            <div class="formula-title">Formulas Used (Welch's t-test)</div>
+                            t = (x̄₁ − x̄₂) / √(s₁²/n₁ + s₂²/n₂)<br>
+                            df ≈ (s₁²/n₁ + s₂²/n₂)² / [(s₁²/n₁)²/(n₁−1) + (s₂²/n₂)²/(n₂−1)]<br>
+                            Cohen's d = |x̄₁ − x̄₂| / sₚ  where sₚ = √[((n₁−1)s₁² + (n₂−1)s₂²) / (n₁+n₂−2)]
+                        </div>
                         
                         <div id="t2-results" class="results">
                             <button class="copy-btn" onclick="copyResults('t2-results')">📋 Copy</button>
@@ -605,6 +722,11 @@
                 <div class="calculator-grid single">
                     <div class="calc-section">
                         <h3>📈 Linear Regression & Correlation</h3>
+                        <div class="example-btns">
+                            <span style="font-size:11px;color:var(--text-muted);align-self:center">Try:</span>
+                            <button class="example-btn" onclick="loadExample('reg-study')">📚 Study hours vs score</button>
+                            <button class="example-btn" onclick="loadExample('reg-weak')">🔀 Weak correlation</button>
+                        </div>
                         <p class="helper-text" style="margin-bottom:16px">Enter paired (x, y) data. One pair per line, separated by comma or tab.</p>
                         <div class="input-group">
                             <label for="reg-data">Data (x, y pairs):</label>
@@ -612,6 +734,15 @@
                         </div>
                         <div class="btn-row">
                             <button class="btn" onclick="calculateRegression()">Fit Regression</button>
+                            <button class="formula-toggle" onclick="toggleFormula('reg-formula')">📐 Show formulas</button>
+                        </div>
+                        <div id="reg-formula" class="formula-box">
+                            <div class="formula-title">Formulas Used</div>
+                            Slope: b₁ = Σ(xᵢ−x̄)(yᵢ−ȳ) / Σ(xᵢ−x̄)²<br>
+                            Intercept: b₀ = ȳ − b₁x̄<br>
+                            Correlation: r = Σ(xᵢ−x̄)(yᵢ−ȳ) / √[Σ(xᵢ−x̄)² · Σ(yᵢ−ȳ)²]<br>
+                            R² = r² (proportion of variance explained)<br>
+                            Sₑ = √[Σ(yᵢ−ŷᵢ)² / (n−2)]
                         </div>
                         
                         <div id="reg-results" class="results">
@@ -638,6 +769,11 @@
                 <div class="calculator-grid single">
                     <div class="calc-section">
                         <h3>📐 Sample Size & Power</h3>
+                        <div class="example-btns">
+                            <span style="font-size:11px;color:var(--text-muted);align-self:center">Try:</span>
+                            <button class="example-btn" onclick="loadExample('ss-small')">🔬 Detect small effect</button>
+                            <button class="example-btn" onclick="loadExample('ss-large')">📢 Detect large effect</button>
+                        </div>
                         <div class="input-row">
                             <div class="input-group">
                                 <label for="ss-effect">Effect Size (Cohen's d):</label>
@@ -662,7 +798,17 @@
                                 <option value="0.1">0.10</option>
                             </select>
                         </div>
+                        <div class="btn-row">
                         <button class="btn" onclick="calculateSampleSize()">Calculate Sample Size</button>
+                        <button class="formula-toggle" onclick="toggleFormula('ss-formula')">📐 Show formulas</button>
+                        </div>
+                        <div id="ss-formula" class="formula-box">
+                            <div class="formula-title">Formulas Used</div>
+                            n = ⌈((z<sub>α/2</sub> + z<sub>β</sub>) / d)²⌉<br>
+                            where z<sub>α/2</sub> = inverse normal CDF at 1−α/2<br>
+                            z<sub>β</sub> = inverse normal CDF at power<br>
+                            d = Cohen's d (effect size in std dev units)
+                        </div>
                         
                         <div id="samplesize-results" class="results">
                             <button class="copy-btn" onclick="copyResults('samplesize-results')">📋 Copy</button>
@@ -684,8 +830,22 @@
         // ────── Theme ──────
         function initTheme() {
             const saved = localStorage.getItem('statcalc-theme');
-            applyTheme(saved || 'light');
+            if (saved) {
+                applyTheme(saved);
+            } else {
+                // Respect system preference
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                applyTheme(prefersDark ? 'dark' : 'light');
+            }
         }
+        
+        // Listen for system theme changes (only when no manual override)
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('statcalc-theme')) {
+                applyTheme(e.matches ? 'dark' : 'light');
+                redrawCharts();
+            }
+        });
         
         function toggleTheme() {
             const current = document.documentElement.getAttribute('data-theme');
@@ -702,6 +862,61 @@
         }
         
         initTheme();
+        
+        // ────── Formula Toggle ──────
+        function toggleFormula(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('visible');
+        }
+        
+        // ────── Example Data ──────
+        function loadExample(key) {
+            const examples = {
+                // Descriptive
+                'desc-exam': { target: 'data-input', data: '72, 85, 91, 68, 77, 83, 95, 62, 88, 79, 74, 90, 81, 67, 86, 73, 92, 78, 84, 70', action: 'calculateDescriptive' },
+                'desc-heights': { target: 'data-input', data: '165.2, 170.1, 158.7, 175.3, 162.8, 180.5, 168.4, 172.9, 155.6, 177.2, 163.1, 169.8, 174.7, 160.3, 167.5', action: 'calculateDescriptive' },
+                'desc-skewed': { target: 'data-input', data: '1.2, 1.5, 1.8, 2.0, 2.1, 2.3, 2.5, 2.8, 3.1, 3.5, 4.2, 5.1, 6.8, 9.2, 15.7', action: 'calculateDescriptive' },
+                // CI
+                'ci-textbook': { fields: {'ci-mean': '98.2', 'ci-std': '0.73', 'ci-n': '36', 'ci-level': '95'}, action: 'calculateCI' },
+                'ci-small': { fields: {'ci-mean': '52.3', 'ci-std': '8.1', 'ci-n': '8', 'ci-level': '95'}, action: 'calculateCI' },
+                // One-sample t
+                't1-sig': { fields: {'t-mean': '105.3', 't-std': '12.5', 't-n': '25', 't-null': '100', 't-tail': 'two'}, action: 'calculateTTest' },
+                't1-nonsig': { fields: {'t-mean': '101.2', 't-std': '15.8', 't-n': '20', 't-null': '100', 't-tail': 'two'}, action: 'calculateTTest' },
+                // Two-sample t
+                't2-drug': { targets: {'t2-data1': '8.2, 7.1, 9.3, 6.8, 8.5, 7.9, 9.1, 8.0, 7.5, 8.8', 't2-data2': '5.1, 6.3, 4.8, 5.7, 6.0, 5.5, 4.9, 5.2, 6.1, 5.8'}, fields: {'t2-tail': 'two'}, action: 'calculateTwoSampleT' },
+                't2-equal': { targets: {'t2-data1': '23.1, 25.4, 22.8, 24.6, 23.9, 24.2, 23.5', 't2-data2': '24.0, 23.7, 24.8, 23.3, 24.1, 23.6, 24.5'}, fields: {'t2-tail': 'two'}, action: 'calculateTwoSampleT' },
+                // Regression
+                'reg-study': { target: 'reg-data', data: '1, 52\n2, 58\n3, 65\n4, 71\n5, 78\n6, 82\n7, 88\n8, 91\n9, 95\n10, 97', action: 'calculateRegression' },
+                'reg-weak': { target: 'reg-data', data: '1, 45\n2, 62\n3, 38\n4, 55\n5, 70\n6, 42\n7, 68\n8, 51\n9, 59\n10, 48', action: 'calculateRegression' },
+                // Sample size
+                'ss-small': { fields: {'ss-effect': '0.2', 'ss-power': '0.8', 'ss-alpha': '0.05'}, action: 'calculateSampleSize' },
+                'ss-large': { fields: {'ss-effect': '0.8', 'ss-power': '0.9', 'ss-alpha': '0.05'}, action: 'calculateSampleSize' },
+            };
+            
+            const ex = examples[key];
+            if (!ex) return;
+            
+            // Fill single textarea
+            if (ex.target) {
+                document.getElementById(ex.target).value = ex.data;
+            }
+            // Fill multiple textareas
+            if (ex.targets) {
+                for (const [id, val] of Object.entries(ex.targets)) {
+                    document.getElementById(id).value = val;
+                }
+            }
+            // Fill input fields / selects
+            if (ex.fields) {
+                for (const [id, val] of Object.entries(ex.fields)) {
+                    document.getElementById(id).value = val;
+                }
+            }
+            // Auto-calculate
+            if (ex.action && window[ex.action]) {
+                window[ex.action]();
+            }
+        }
         
         // ────── Tabs ──────
         function switchTab(name) {
