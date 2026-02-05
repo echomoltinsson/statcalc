@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,27 +7,97 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
+        :root {
+            /* Light theme (default) */
+            --bg: #f5f5f5;
+            --container-bg: #ffffff;
+            --container-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            --header-bg: #4f46e5;
+            --header-bg-end: #6366f1;
+            --header-text: #ffffff;
+            --section-bg: #f8fafc;
+            --section-border: #e2e8f0;
+            --section-hover-border: #4f46e5;
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --input-bg: #ffffff;
+            --input-border: #e2e8f0;
+            --input-focus: #4f46e5;
+            --btn-bg: #4f46e5;
+            --btn-bg-end: #6366f1;
+            --btn-text: #ffffff;
+            --btn-shadow: rgba(79, 70, 229, 0.25);
+            --results-bg: #ffffff;
+            --results-border: #e2e8f0;
+            --results-active-bg: #f0fdf4;
+            --results-active-border: #10b981;
+            --divider: #e2e8f0;
+            --chart-bar: #4f46e5;
+            --chart-axis: #94a3b8;
+            --chart-label: #64748b;
+            --select-bg: #ffffff;
+            --toggle-bg: #e2e8f0;
+            --toggle-icon: '☀️';
+        }
+        
+        [data-theme="dark"] {
+            --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --container-bg: #1e1e2e;
+            --container-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            --header-bg: #302060;
+            --header-bg-end: #4a2080;
+            --header-text: #ffffff;
+            --section-bg: #2a2a3e;
+            --section-border: #3a3a50;
+            --section-hover-border: #7c6aef;
+            --text-primary: #e2e8f0;
+            --text-secondary: #b0b8c8;
+            --text-muted: #8890a0;
+            --input-bg: #1e1e2e;
+            --input-border: #3a3a50;
+            --input-focus: #7c6aef;
+            --btn-bg: #6d5ae6;
+            --btn-bg-end: #9b6aef;
+            --btn-text: #ffffff;
+            --btn-shadow: rgba(109, 90, 230, 0.35);
+            --results-bg: #1e1e2e;
+            --results-border: #3a3a50;
+            --results-active-bg: #1a2e1a;
+            --results-active-border: #10b981;
+            --divider: #3a3a50;
+            --chart-bar: #7c6aef;
+            --chart-axis: #6a6a80;
+            --chart-label: #8890a0;
+            --select-bg: #1e1e2e;
+            --toggle-bg: #3a3a50;
+            --toggle-icon: '🌙';
+        }
+        
         body {
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
             min-height: 100vh;
             padding: 20px;
+            transition: background 0.3s ease;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background: white;
+            background: var(--container-bg);
             border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: var(--container-shadow);
             overflow: hidden;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
         }
         
         .header {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--header-bg) 0%, var(--header-bg-end) 100%);
+            color: var(--header-text);
             padding: 30px;
             text-align: center;
+            position: relative;
         }
         
         .header h1 {
@@ -39,6 +109,55 @@
         .header p {
             font-size: 1.1rem;
             opacity: 0.9;
+        }
+        
+        /* Theme toggle */
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50px;
+            width: 56px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+        }
+        
+        .theme-toggle .toggle-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        [data-theme="dark"] .theme-toggle .toggle-thumb {
+            transform: translateX(26px);
+        }
+        
+        .theme-toggle-label {
+            position: absolute;
+            top: 54px;
+            right: 20px;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 0.05em;
         }
         
         .main {
@@ -57,23 +176,26 @@
                 grid-template-columns: 1fr;
                 gap: 30px;
             }
+            .header h1 { font-size: 1.8rem; }
+            .main { padding: 20px; }
+            .theme-toggle-label { display: none; }
         }
         
         .calc-section {
-            background: #f8fafc;
+            background: var(--section-bg);
             border-radius: 12px;
             padding: 30px;
-            border: 2px solid #e2e8f0;
+            border: 2px solid var(--section-border);
             transition: all 0.3s ease;
         }
         
         .calc-section:hover {
-            border-color: #4f46e5;
+            border-color: var(--section-hover-border);
             transform: translateY(-2px);
         }
         
         .calc-section h3 {
-            color: #1e293b;
+            color: var(--text-primary);
             font-size: 1.3rem;
             margin-bottom: 20px;
             font-weight: 600;
@@ -86,33 +208,48 @@
         .input-group label {
             display: block;
             margin-bottom: 8px;
-            color: #475569;
+            color: var(--text-secondary);
             font-weight: 500;
         }
         
-        .input-group input, .input-group textarea {
+        .input-group input,
+        .input-group textarea,
+        .input-group select {
             width: 100%;
             padding: 12px;
-            border: 2px solid #e2e8f0;
+            border: 2px solid var(--input-border);
             border-radius: 8px;
             font-size: 16px;
-            transition: border-color 0.2s ease;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            transition: border-color 0.2s ease, background 0.3s ease;
         }
         
-        .input-group input:focus, .input-group textarea:focus {
+        .input-group input:focus,
+        .input-group textarea:focus,
+        .input-group select:focus {
             outline: none;
-            border-color: #4f46e5;
+            border-color: var(--input-focus);
         }
         
         .input-group textarea {
             height: 100px;
             resize: vertical;
-            font-family: 'SF Mono', Monaco, monospace;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+        }
+        
+        .input-group select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+            cursor: pointer;
         }
         
         .btn {
-            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--btn-bg) 0%, var(--btn-bg-end) 100%);
+            color: var(--btn-text);
             border: none;
             padding: 12px 24px;
             border-radius: 8px;
@@ -124,20 +261,25 @@
         
         .btn:hover {
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            box-shadow: 0 4px 12px var(--btn-shadow);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
         }
         
         .results {
             margin-top: 20px;
             padding: 20px;
-            background: white;
+            background: var(--results-bg);
             border-radius: 8px;
-            border: 2px solid #e2e8f0;
+            border: 2px solid var(--results-border);
+            transition: all 0.3s ease;
         }
         
         .results.active {
-            border-color: #10b981;
-            background: #f0fdf4;
+            border-color: var(--results-active-border);
+            background: var(--results-active-bg);
         }
         
         .stat-result {
@@ -145,22 +287,23 @@
             justify-content: space-between;
             margin-bottom: 12px;
             padding: 8px 0;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--divider);
         }
         
         .stat-result:last-child {
             border-bottom: none;
+            margin-bottom: 0;
         }
         
         .stat-label {
-            color: #475569;
+            color: var(--text-secondary);
             font-weight: 500;
         }
         
         .stat-value {
-            color: #1e293b;
+            color: var(--text-primary);
             font-weight: 600;
-            font-family: 'SF Mono', Monaco, monospace;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
         }
         
         .visualization {
@@ -173,6 +316,23 @@
             height: 300px;
             margin-top: 20px;
         }
+        
+        /* Footer with theme credit */
+        .footer {
+            text-align: center;
+            padding: 20px 40px 30px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        .footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -180,6 +340,11 @@
         <div class="header">
             <h1>StatCalc</h1>
             <p>Statistical calculations with clear visualizations</p>
+            
+            <div class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode" role="button" aria-label="Toggle theme">
+                <div class="toggle-thumb" id="toggle-icon">☀️</div>
+            </div>
+            <div class="theme-toggle-label" id="theme-label">light mode</div>
         </div>
         
         <div class="main">
@@ -218,6 +383,14 @@
                             <span class="stat-label">Min / Max</span>
                             <span class="stat-value" id="desc-range">-</span>
                         </div>
+                        <div class="stat-result">
+                            <span class="stat-label">IQR (Q1 – Q3)</span>
+                            <span class="stat-value" id="desc-iqr">-</span>
+                        </div>
+                        <div class="stat-result">
+                            <span class="stat-label">Skewness</span>
+                            <span class="stat-value" id="desc-skew">-</span>
+                        </div>
                     </div>
                     
                     <div class="visualization">
@@ -251,6 +424,14 @@
                     <button class="btn" onclick="calculateCI()">Calculate CI</button>
                     
                     <div id="ci-results" class="results">
+                        <div class="stat-result">
+                            <span class="stat-label">Standard Error</span>
+                            <span class="stat-value" id="ci-se">-</span>
+                        </div>
+                        <div class="stat-result">
+                            <span class="stat-label">t-critical value</span>
+                            <span class="stat-value" id="ci-tcrit">-</span>
+                        </div>
                         <div class="stat-result">
                             <span class="stat-label">Margin of Error</span>
                             <span class="stat-value" id="ci-margin">-</span>
@@ -289,6 +470,14 @@
                         <label for="t-null">Null Hypothesis Mean (μ₀):</label>
                         <input type="number" id="t-null" step="any" placeholder="e.g., 20.0">
                     </div>
+                    <div class="input-group">
+                        <label for="t-tail">Test Type:</label>
+                        <select id="t-tail">
+                            <option value="two" selected>Two-tailed (μ ≠ μ₀)</option>
+                            <option value="left">Left-tailed (μ < μ₀)</option>
+                            <option value="right">Right-tailed (μ > μ₀)</option>
+                        </select>
+                    </div>
                     <button class="btn" onclick="calculateTTest()">Run t-Test</button>
                     
                     <div id="ttest-results" class="results">
@@ -301,19 +490,23 @@
                             <span class="stat-value" id="t-df">-</span>
                         </div>
                         <div class="stat-result">
-                            <span class="stat-label">p-value (two-tailed)</span>
+                            <span class="stat-label">p-value</span>
                             <span class="stat-value" id="t-pvalue">-</span>
                         </div>
                         <div class="stat-result">
                             <span class="stat-label">Result (α = 0.05)</span>
                             <span class="stat-value" id="t-result">-</span>
                         </div>
+                        <div class="stat-result">
+                            <span class="stat-label">Effect Size (Cohen's d)</span>
+                            <span class="stat-value" id="t-cohend">-</span>
+                        </div>
                     </div>
                 </div>
                 
                 <!-- Sample Size Calculator -->
                 <div class="calc-section">
-                    <h3>📐 Sample Size Calculator</h3>
+                    <h3>📐 Sample Size & Power</h3>
                     <div class="input-group">
                         <label for="ss-effect">Effect Size (Cohen's d):</label>
                         <input type="number" id="ss-effect" step="any" placeholder="e.g., 0.5" value="0.5">
@@ -346,14 +539,50 @@
                             <span class="stat-label">Effect Size Interpretation</span>
                             <span class="stat-value" id="ss-interpretation">-</span>
                         </div>
+                        <div class="stat-result">
+                            <span class="stat-label">Minimum Detectable Difference</span>
+                            <span class="stat-value" id="ss-mdd">-</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
+        
+        <div class="footer">
+            Built by <a href="https://onyxclaw.substack.com" target="_blank">Onyx</a> · Toggle ☀️/🌙 for light/dark mode
+        </div>
     </div>
 
     <script>
-        // Statistical functions
+        // ────── Theme ──────
+        function initTheme() {
+            const saved = localStorage.getItem('statcalc-theme');
+            const theme = saved || 'light';
+            applyTheme(theme);
+        }
+        
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            applyTheme(next);
+            localStorage.setItem('statcalc-theme', next);
+            // Redraw histogram if data exists
+            const input = document.getElementById('data-input').value;
+            if (input.trim()) {
+                const data = parseData(input);
+                if (data.length > 0) drawHistogram(data);
+            }
+        }
+        
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            document.getElementById('toggle-icon').textContent = theme === 'dark' ? '🌙' : '☀️';
+            document.getElementById('theme-label').textContent = theme + ' mode';
+        }
+        
+        initTheme();
+        
+        // ────── Statistical Functions ──────
         function mean(arr) {
             return arr.reduce((a, b) => a + b, 0) / arr.length;
         }
@@ -366,6 +595,17 @@
                 : sorted[mid];
         }
         
+        function quartile(arr, q) {
+            const sorted = [...arr].sort((a, b) => a - b);
+            const pos = (sorted.length - 1) * q;
+            const base = Math.floor(pos);
+            const rest = pos - base;
+            if (sorted[base + 1] !== undefined) {
+                return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
+            }
+            return sorted[base];
+        }
+        
         function variance(arr) {
             const m = mean(arr);
             return arr.reduce((a, b) => a + Math.pow(b - m, 2), 0) / (arr.length - 1);
@@ -375,6 +615,15 @@
             return Math.sqrt(variance(arr));
         }
         
+        function skewness(arr) {
+            const n = arr.length;
+            if (n < 3) return NaN;
+            const m = mean(arr);
+            const s = standardDeviation(arr);
+            const sum = arr.reduce((a, x) => a + Math.pow((x - m) / s, 3), 0);
+            return (n / ((n - 1) * (n - 2))) * sum;
+        }
+        
         function parseData(input) {
             return input.replace(/\n/g, ',')
                        .split(',')
@@ -382,41 +631,102 @@
                        .filter(x => !isNaN(x));
         }
         
-        // t-distribution functions (approximations)
-        function tCritical(df, alpha) {
-            // Simplified approximation for common cases
-            const criticalValues = {
-                0.10: { 1: 3.078, 5: 1.476, 10: 1.372, 20: 1.325, 30: 1.310, Infinity: 1.282 },
-                0.05: { 1: 6.314, 5: 2.015, 10: 1.812, 20: 1.725, 30: 1.697, Infinity: 1.960 },
-                0.01: { 1: 31.821, 5: 3.365, 10: 2.764, 20: 2.528, 30: 2.457, Infinity: 2.576 }
-            };
-            
-            const table = criticalValues[alpha];
-            if (df >= 30) return table[Infinity];
-            
-            const dfs = Object.keys(table).map(Number).sort((a, b) => a - b);
-            for (let i = 0; i < dfs.length - 1; i++) {
-                if (df <= dfs[i]) return table[dfs[i]];
+        // ────── t-distribution (improved) ──────
+        
+        // Regularized incomplete beta function (for accurate p-values)
+        function lnGamma(z) {
+            // Lanczos approximation
+            const g = 7;
+            const c = [
+                0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+                771.32342877765313, -176.61502916214059, 12.507343278686905,
+                -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7
+            ];
+            if (z < 0.5) {
+                return Math.log(Math.PI / Math.sin(Math.PI * z)) - lnGamma(1 - z);
             }
-            return table[30];
+            z -= 1;
+            let x = c[0];
+            for (let i = 1; i < g + 2; i++) {
+                x += c[i] / (z + i);
+            }
+            const t = z + g + 0.5;
+            return 0.5 * Math.log(2 * Math.PI) + (z + 0.5) * Math.log(t) - t + Math.log(x);
         }
         
-        function tPValue(t, df) {
-            // Rough approximation - in real app would use proper library
-            t = Math.abs(t);
-            if (df >= 30) {
-                // Use normal approximation
-                const z = t;
-                return 2 * (1 - normalCDF(z));
+        function betaIncomplete(a, b, x) {
+            // Continued fraction approximation (Lentz's method)
+            if (x === 0 || x === 1) return x;
+            if (x > (a + 1) / (a + b + 2)) {
+                return 1 - betaIncomplete(b, a, 1 - x);
             }
             
-            // Simplified lookup for common cases
-            if (t < 1.0) return 0.4;
-            if (t < 1.5) return 0.2;
-            if (t < 2.0) return 0.1;
-            if (t < 2.5) return 0.05;
-            if (t < 3.0) return 0.01;
-            return 0.001;
+            const lnBeta = lnGamma(a) + lnGamma(b) - lnGamma(a + b);
+            const front = Math.exp(Math.log(x) * a + Math.log(1 - x) * b - lnBeta) / a;
+            
+            // Lentz's continued fraction
+            let f = 1, c = 1, d = 1 - (a + b) * x / (a + 1);
+            if (Math.abs(d) < 1e-30) d = 1e-30;
+            d = 1 / d;
+            f = d;
+            
+            for (let m = 1; m <= 200; m++) {
+                // Even step
+                let num = m * (b - m) * x / ((a + 2 * m - 1) * (a + 2 * m));
+                d = 1 + num * d;
+                if (Math.abs(d) < 1e-30) d = 1e-30;
+                c = 1 + num / c;
+                if (Math.abs(c) < 1e-30) c = 1e-30;
+                d = 1 / d;
+                f *= c * d;
+                
+                // Odd step
+                num = -(a + m) * (a + b + m) * x / ((a + 2 * m) * (a + 2 * m + 1));
+                d = 1 + num * d;
+                if (Math.abs(d) < 1e-30) d = 1e-30;
+                c = 1 + num / c;
+                if (Math.abs(c) < 1e-30) c = 1e-30;
+                d = 1 / d;
+                const delta = c * d;
+                f *= delta;
+                
+                if (Math.abs(delta - 1) < 1e-10) break;
+            }
+            
+            return front * f;
+        }
+        
+        function tCDF(t, df) {
+            // Student's t CDF using regularized incomplete beta function
+            const x = df / (df + t * t);
+            const p = 0.5 * betaIncomplete(df / 2, 0.5, x);
+            return t >= 0 ? 1 - p : p;
+        }
+        
+        function tPValue(t, df, tail) {
+            if (tail === 'two') {
+                return 2 * (1 - tCDF(Math.abs(t), df));
+            } else if (tail === 'left') {
+                return tCDF(t, df);
+            } else {
+                return 1 - tCDF(t, df);
+            }
+        }
+        
+        function tCritical(df, alpha) {
+            // Newton's method to find t such that tCDF(t, df) = 1 - alpha/2
+            const target = 1 - alpha / 2;
+            let t = 1.96; // initial guess
+            for (let i = 0; i < 50; i++) {
+                const p = tCDF(t, df);
+                const err = p - target;
+                if (Math.abs(err) < 1e-10) break;
+                // Numerical derivative
+                const dp = (tCDF(t + 0.0001, df) - tCDF(t - 0.0001, df)) / 0.0002;
+                if (Math.abs(dp) < 1e-15) break;
+                t -= err / dp;
+            }
+            return t;
         }
         
         function normalCDF(z) {
@@ -424,24 +734,62 @@
         }
         
         function erf(x) {
-            // Approximation of error function
-            const a1 = 0.254829592;
-            const a2 = -0.284496736;
-            const a3 = 1.421413741;
-            const a4 = -1.453152027;
-            const a5 = 1.061405429;
-            const p = 0.3275911;
-            
+            const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
+            const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
             const sign = x >= 0 ? 1 : -1;
             x = Math.abs(x);
-            
             const t = 1.0 / (1.0 + p * x);
             const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
-            
             return sign * y;
         }
         
-        // Calculator functions
+        function normalInvCDF(p) {
+            // Rational approximation (Abramowitz & Stegun 26.2.23)
+            if (p <= 0) return -Infinity;
+            if (p >= 1) return Infinity;
+            if (p === 0.5) return 0;
+            
+            const a = [
+                -3.969683028665376e+01, 2.209460984245205e+02,
+                -2.759285104469687e+02, 1.383577518672690e+02,
+                -3.066479806614716e+01, 2.506628277459239e+00
+            ];
+            const b = [
+                -5.447609879822406e+01, 1.615858368580409e+02,
+                -1.556989798598866e+02, 6.680131188771972e+01,
+                -1.328068155288572e+01
+            ];
+            const c = [
+                -7.784894002430293e-03, -3.223964580411365e-01,
+                -2.400758277161838e+00, -2.549732539343734e+00,
+                 4.374664141464968e+00, 2.938163982698783e+00
+            ];
+            const d = [
+                7.784695709041462e-03, 3.224671290700398e-01,
+                2.445134137142996e+00, 3.754408661907416e+00
+            ];
+            
+            const pLow = 0.02425, pHigh = 1 - pLow;
+            let q, r;
+            
+            if (p < pLow) {
+                q = Math.sqrt(-2 * Math.log(p));
+                return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
+                       ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+            } else if (p <= pHigh) {
+                q = p - 0.5;
+                r = q * q;
+                return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q /
+                       (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+            } else {
+                q = Math.sqrt(-2 * Math.log(1 - p));
+                return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) /
+                        ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+            }
+        }
+        
+        // ────── Calculator Functions ──────
+        
         function calculateDescriptive() {
             const input = document.getElementById('data-input').value;
             const data = parseData(input);
@@ -451,79 +799,81 @@
                 return;
             }
             
-            const results = {
-                n: data.length,
-                mean: mean(data),
-                median: median(data),
-                std: standardDeviation(data),
-                var: variance(data),
-                min: Math.min(...data),
-                max: Math.max(...data)
-            };
+            const q1 = quartile(data, 0.25);
+            const q3 = quartile(data, 0.75);
+            const sk = skewness(data);
             
-            document.getElementById('desc-n').textContent = results.n;
-            document.getElementById('desc-mean').textContent = results.mean.toFixed(3);
-            document.getElementById('desc-median').textContent = results.median.toFixed(3);
-            document.getElementById('desc-std').textContent = results.std.toFixed(3);
-            document.getElementById('desc-var').textContent = results.var.toFixed(3);
-            document.getElementById('desc-range').textContent = `${results.min.toFixed(3)} / ${results.max.toFixed(3)}`;
+            document.getElementById('desc-n').textContent = data.length;
+            document.getElementById('desc-mean').textContent = mean(data).toFixed(4);
+            document.getElementById('desc-median').textContent = median(data).toFixed(4);
+            document.getElementById('desc-std').textContent = standardDeviation(data).toFixed(4);
+            document.getElementById('desc-var').textContent = variance(data).toFixed(4);
+            document.getElementById('desc-range').textContent = 
+                `${Math.min(...data).toFixed(4)} / ${Math.max(...data).toFixed(4)}`;
+            document.getElementById('desc-iqr').textContent = 
+                `${q1.toFixed(4)} – ${q3.toFixed(4)}  (IQR = ${(q3 - q1).toFixed(4)})`;
+            document.getElementById('desc-skew').textContent = isNaN(sk) ? 'n < 3' : sk.toFixed(4);
             
             document.getElementById('descriptive-results').classList.add('active');
-            
-            // Draw simple histogram
             drawHistogram(data);
         }
         
         function calculateCI() {
-            const mean = parseFloat(document.getElementById('ci-mean').value);
-            const std = parseFloat(document.getElementById('ci-std').value);
+            const m = parseFloat(document.getElementById('ci-mean').value);
+            const s = parseFloat(document.getElementById('ci-std').value);
             const n = parseInt(document.getElementById('ci-n').value);
             const level = parseInt(document.getElementById('ci-level').value);
             
-            if (isNaN(mean) || isNaN(std) || isNaN(n)) {
-                alert('Please enter valid numbers');
+            if (isNaN(m) || isNaN(s) || isNaN(n) || n < 2) {
+                alert('Please enter valid numbers (n ≥ 2)');
                 return;
             }
             
             const alpha = (100 - level) / 100;
             const df = n - 1;
             const t = tCritical(df, alpha);
-            const se = std / Math.sqrt(n);
+            const se = s / Math.sqrt(n);
             const margin = t * se;
             
-            const lower = mean - margin;
-            const upper = mean + margin;
-            
-            document.getElementById('ci-margin').textContent = margin.toFixed(3);
-            document.getElementById('ci-lower').textContent = lower.toFixed(3);
-            document.getElementById('ci-upper').textContent = upper.toFixed(3);
-            document.getElementById('ci-interval').textContent = `[${lower.toFixed(3)}, ${upper.toFixed(3)}]`;
+            document.getElementById('ci-se').textContent = se.toFixed(4);
+            document.getElementById('ci-tcrit').textContent = `t(${df}) = ${t.toFixed(4)}`;
+            document.getElementById('ci-margin').textContent = `± ${margin.toFixed(4)}`;
+            document.getElementById('ci-lower').textContent = (m - margin).toFixed(4);
+            document.getElementById('ci-upper').textContent = (m + margin).toFixed(4);
+            document.getElementById('ci-interval').textContent = 
+                `[${(m - margin).toFixed(4)}, ${(m + margin).toFixed(4)}]`;
             
             document.getElementById('ci-results').classList.add('active');
         }
         
         function calculateTTest() {
             const sampleMean = parseFloat(document.getElementById('t-mean').value);
-            const std = parseFloat(document.getElementById('t-std').value);
+            const s = parseFloat(document.getElementById('t-std').value);
             const n = parseInt(document.getElementById('t-n').value);
             const nullMean = parseFloat(document.getElementById('t-null').value);
+            const tail = document.getElementById('t-tail').value;
             
-            if (isNaN(sampleMean) || isNaN(std) || isNaN(n) || isNaN(nullMean)) {
-                alert('Please enter valid numbers');
+            if (isNaN(sampleMean) || isNaN(s) || isNaN(n) || isNaN(nullMean) || n < 2) {
+                alert('Please enter valid numbers (n ≥ 2)');
                 return;
             }
             
-            const se = std / Math.sqrt(n);
+            const se = s / Math.sqrt(n);
             const t = (sampleMean - nullMean) / se;
             const df = n - 1;
-            const pValue = tPValue(t, df);
+            const pValue = tPValue(t, df, tail);
+            const cohensD = Math.abs(sampleMean - nullMean) / s;
             
-            const result = pValue < 0.05 ? 'Reject H₀' : 'Fail to reject H₀';
+            const result = pValue < 0.05 ? 'Reject H₀ ✓' : 'Fail to reject H₀';
+            const tailLabel = tail === 'two' ? 'two-tailed' : (tail === 'left' ? 'left-tailed' : 'right-tailed');
             
-            document.getElementById('t-stat').textContent = t.toFixed(3);
+            document.getElementById('t-stat').textContent = t.toFixed(4);
             document.getElementById('t-df').textContent = df;
-            document.getElementById('t-pvalue').textContent = pValue.toFixed(4);
+            document.getElementById('t-pvalue').textContent = 
+                `${pValue < 0.0001 ? pValue.toExponential(2) : pValue.toFixed(4)} (${tailLabel})`;
             document.getElementById('t-result').textContent = result;
+            document.getElementById('t-cohend').textContent = 
+                `${cohensD.toFixed(4)} (${cohensD < 0.2 ? 'negligible' : cohensD < 0.5 ? 'small' : cohensD < 0.8 ? 'medium' : 'large'})`;
             
             document.getElementById('ttest-results').classList.add('active');
         }
@@ -533,18 +883,16 @@
             const power = parseFloat(document.getElementById('ss-power').value);
             const alpha = parseFloat(document.getElementById('ss-alpha').value);
             
-            if (isNaN(effect) || isNaN(power) || isNaN(alpha)) {
-                alert('Please enter valid numbers');
+            if (isNaN(effect) || effect <= 0) {
+                alert('Please enter a positive effect size');
                 return;
             }
             
-            // Cohen's formula for one-sample t-test
-            const z_alpha = alpha === 0.05 ? 1.96 : (alpha === 0.01 ? 2.58 : 1.28);
-            const z_beta = power === 0.8 ? 0.84 : (power === 0.9 ? 1.28 : (power === 0.95 ? 1.64 : 0.52));
-            
+            const z_alpha = normalInvCDF(1 - alpha / 2);
+            const z_beta = normalInvCDF(power);
             const n = Math.ceil(Math.pow((z_alpha + z_beta) / effect, 2));
             
-            let interpretation = '';
+            let interpretation;
             if (effect < 0.2) interpretation = 'Very small';
             else if (effect < 0.5) interpretation = 'Small';
             else if (effect < 0.8) interpretation = 'Medium';
@@ -552,15 +900,18 @@
             
             document.getElementById('ss-n').textContent = n;
             document.getElementById('ss-interpretation').textContent = interpretation;
+            document.getElementById('ss-mdd').textContent = `${effect}σ (${effect} × std dev)`;
             
             document.getElementById('samplesize-results').classList.add('active');
         }
         
+        // ────── Histogram ──────
+        
         function drawHistogram(data) {
             const canvas = document.getElementById('histogram');
             const ctx = canvas.getContext('2d');
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             
-            // Set canvas size
             canvas.width = canvas.offsetWidth * devicePixelRatio;
             canvas.height = canvas.offsetHeight * devicePixelRatio;
             ctx.scale(devicePixelRatio, devicePixelRatio);
@@ -568,53 +919,130 @@
             const width = canvas.offsetWidth;
             const height = canvas.offsetHeight;
             
-            // Clear canvas
             ctx.clearRect(0, 0, width, height);
             
-            // Calculate histogram
             const min = Math.min(...data);
             const max = Math.max(...data);
-            const bins = Math.min(10, Math.ceil(Math.sqrt(data.length)));
-            const binWidth = (max - min) / bins;
+            
+            // Sturges' rule
+            const bins = Math.max(3, Math.min(15, Math.ceil(1 + 3.322 * Math.log10(data.length))));
+            const range = max - min || 1;
+            const binWidth = range / bins;
             
             const histogram = Array(bins).fill(0);
             data.forEach(value => {
                 let bin = Math.floor((value - min) / binWidth);
-                if (bin === bins) bin = bins - 1; // Handle max value
+                if (bin >= bins) bin = bins - 1;
                 histogram[bin]++;
             });
             
             const maxCount = Math.max(...histogram);
             
-            // Draw histogram
-            const padding = 40;
-            const barWidth = (width - 2 * padding) / bins;
-            const chartHeight = height - 2 * padding;
+            const padding = { top: 30, right: 20, bottom: 45, left: 50 };
+            const chartW = width - padding.left - padding.right;
+            const chartH = height - padding.top - padding.bottom;
+            const barW = chartW / bins;
             
-            ctx.fillStyle = '#4f46e5';
-            histogram.forEach((count, i) => {
-                const barHeight = (count / maxCount) * chartHeight;
-                const x = padding + i * barWidth;
-                const y = height - padding - barHeight;
+            // Colors based on theme
+            const barColor = isDark ? '#7c6aef' : '#4f46e5';
+            const barHoverColor = isDark ? '#9b8aff' : '#6366f1';
+            const axisColor = isDark ? '#6a6a80' : '#94a3b8';
+            const labelColor = isDark ? '#8890a0' : '#64748b';
+            const gridColor = isDark ? 'rgba(106,106,128,0.2)' : 'rgba(148,163,184,0.3)';
+            
+            // Grid lines
+            ctx.strokeStyle = gridColor;
+            ctx.lineWidth = 1;
+            const gridSteps = 4;
+            for (let i = 1; i <= gridSteps; i++) {
+                const y = padding.top + chartH - (i / gridSteps) * chartH;
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(width - padding.right, y);
+                ctx.stroke();
                 
-                ctx.fillRect(x, y, barWidth * 0.8, barHeight);
+                ctx.fillStyle = labelColor;
+                ctx.font = '11px SF Mono, Monaco, monospace';
+                ctx.textAlign = 'right';
+                ctx.fillText(Math.round(maxCount * i / gridSteps), padding.left - 8, y + 4);
+            }
+            
+            // Bars
+            histogram.forEach((count, i) => {
+                const barHeight = (count / maxCount) * chartH;
+                const x = padding.left + i * barW;
+                const y = padding.top + chartH - barHeight;
+                
+                ctx.fillStyle = barColor;
+                ctx.beginPath();
+                // Rounded top corners
+                const r = Math.min(4, barW * 0.3);
+                const bw = barW * 0.82;
+                const bx = x + (barW - bw) / 2;
+                if (barHeight > r * 2) {
+                    ctx.moveTo(bx, y + r);
+                    ctx.arcTo(bx, y, bx + bw, y, r);
+                    ctx.arcTo(bx + bw, y, bx + bw, y + barHeight, r);
+                    ctx.lineTo(bx + bw, padding.top + chartH);
+                    ctx.lineTo(bx, padding.top + chartH);
+                } else {
+                    ctx.rect(bx, y, bw, barHeight);
+                }
+                ctx.fill();
+                
+                // Bin label
+                const binStart = min + i * binWidth;
+                ctx.fillStyle = labelColor;
+                ctx.font = '10px SF Mono, Monaco, monospace';
+                ctx.textAlign = 'center';
+                if (bins <= 10 || i % 2 === 0) {
+                    ctx.fillText(binStart.toFixed(1), x + barW / 2, padding.top + chartH + 18);
+                }
             });
             
-            // Draw axes
-            ctx.strokeStyle = '#64748b';
-            ctx.lineWidth = 2;
+            // Axes
+            ctx.strokeStyle = axisColor;
+            ctx.lineWidth = 1.5;
             ctx.beginPath();
-            ctx.moveTo(padding, padding);
-            ctx.lineTo(padding, height - padding);
-            ctx.lineTo(width - padding, height - padding);
+            ctx.moveTo(padding.left, padding.top);
+            ctx.lineTo(padding.left, padding.top + chartH);
+            ctx.lineTo(width - padding.right, padding.top + chartH);
             ctx.stroke();
             
-            // Labels
-            ctx.fillStyle = '#64748b';
-            ctx.font = '12px SF Pro Display, sans-serif';
+            // Title
+            ctx.fillStyle = labelColor;
+            ctx.font = '13px -apple-system, BlinkMacSystemFont, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('Distribution of Values', width / 2, 20);
+            ctx.fillText(`Histogram (n=${data.length}, ${bins} bins)`, width / 2, 18);
+            
+            // Mean line
+            const m = mean(data);
+            const meanX = padding.left + ((m - min) / range) * chartW;
+            if (meanX > padding.left && meanX < width - padding.right) {
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 3]);
+                ctx.beginPath();
+                ctx.moveTo(meanX, padding.top);
+                ctx.lineTo(meanX, padding.top + chartH);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                ctx.fillStyle = '#ef4444';
+                ctx.font = '11px -apple-system, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(`x̄=${m.toFixed(2)}`, meanX + 4, padding.top + 12);
+            }
         }
+        
+        // Handle window resize for histogram
+        window.addEventListener('resize', () => {
+            const input = document.getElementById('data-input').value;
+            if (input.trim()) {
+                const data = parseData(input);
+                if (data.length > 0) drawHistogram(data);
+            }
+        });
     </script>
 </body>
 </html>
