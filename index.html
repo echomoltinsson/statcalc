@@ -452,6 +452,55 @@
         
         .formula-toggle:hover { color: var(--input-focus); }
         
+        /* Contingency / comparison tables */
+        .stat-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+        
+        .stat-table caption {
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-align: left;
+        }
+        
+        .stat-table th, .stat-table td {
+            padding: 6px 10px;
+            border: 1px solid var(--divider);
+            text-align: center;
+        }
+        
+        .stat-table th {
+            background: var(--section-bg);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .stat-table td {
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+            color: var(--text-primary);
+        }
+        
+        .stat-table td.highlight {
+            background: rgba(79, 70, 229, 0.08);
+        }
+        
+        [data-theme="dark"] .stat-table td.highlight {
+            background: rgba(124, 106, 239, 0.12);
+        }
+        
+        .stat-table .total-cell {
+            font-weight: 600;
+            background: var(--section-bg);
+        }
+        
         /* Print styles */
         @media print {
             body { background: white; padding: 0; }
@@ -497,6 +546,7 @@
         <nav class="tab-nav">
             <button class="tab-btn active" onclick="switchTab('basics')">📊 Basics</button>
             <button class="tab-btn" onclick="switchTab('tests')">🎯 Hypothesis Tests</button>
+            <button class="tab-btn" onclick="switchTab('chisquare')">🎲 Chi-Square</button>
             <button class="tab-btn" onclick="switchTab('regression')">📈 Regression</button>
             <button class="tab-btn" onclick="switchTab('power')">📐 Power & Sample Size</button>
         </nav>
@@ -714,10 +764,157 @@
                             <div class="stat-result"><span class="stat-label">95% CI for Difference</span><span class="stat-value" id="t2-ci">-</span></div>
                         </div>
                     </div>
+                    
+                    <!-- Paired t-Test -->
+                    <div class="calc-section full-width">
+                        <h3>🔗 Paired t-Test</h3>
+                        <div class="example-btns">
+                            <span style="font-size:11px;color:var(--text-muted);align-self:center">Try:</span>
+                            <button class="example-btn" onclick="loadExample('tp-before')">💊 Before/after treatment</button>
+                            <button class="example-btn" onclick="loadExample('tp-nosig')">🤷 No change</button>
+                        </div>
+                        <p class="helper-text" style="margin-bottom:16px">Compare two related measurements (before/after, matched pairs). Enter paired data — each line has two values separated by comma or tab.</p>
+                        <div class="input-group">
+                            <label for="tp-data">Paired data (value1, value2 per line):</label>
+                            <textarea id="tp-data" style="height:120px" placeholder="Before, After&#10;85, 90&#10;78, 82&#10;92, 88&#10;70, 75&#10;65, 72"></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label for="tp-tail">Test Type:</label>
+                            <select id="tp-tail">
+                                <option value="two" selected>Two-tailed (μ_d ≠ 0)</option>
+                                <option value="left">Left-tailed (μ_d &lt; 0)</option>
+                                <option value="right">Right-tailed (μ_d &gt; 0)</option>
+                            </select>
+                        </div>
+                        <div class="btn-row">
+                            <button class="btn" onclick="calculatePairedT()">Run Paired t-Test</button>
+                            <button class="formula-toggle" onclick="toggleFormula('tp-formula')">📐 Show formulas</button>
+                        </div>
+                        <div id="tp-formula" class="formula-box">
+                            <div class="formula-title">Formulas Used (Paired t-test)</div>
+                            Differences: dᵢ = x₁ᵢ − x₂ᵢ<br>
+                            Mean difference: d̄ = Σdᵢ / n<br>
+                            SD of differences: s_d = √[Σ(dᵢ − d̄)² / (n−1)]<br>
+                            t = d̄ / (s_d / √n), df = n − 1<br>
+                            Cohen's d = |d̄| / s_d
+                        </div>
+                        
+                        <div id="tp-results" class="results">
+                            <button class="copy-btn" onclick="copyResults('tp-results')">📋 Copy</button>
+                            <div class="stat-result"><span class="stat-label">Number of Pairs (n)</span><span class="stat-value" id="tp-n">-</span></div>
+                            <div class="stat-result"><span class="stat-label">Mean Difference (d̄)</span><span class="stat-value" id="tp-meandiff">-</span></div>
+                            <div class="stat-result"><span class="stat-label">SD of Differences (s_d)</span><span class="stat-value" id="tp-sddiff">-</span></div>
+                            <div class="stat-result"><span class="stat-label">t-statistic</span><span class="stat-value" id="tp-stat">-</span></div>
+                            <div class="stat-result"><span class="stat-label">Degrees of Freedom</span><span class="stat-value" id="tp-df">-</span></div>
+                            <div class="stat-result"><span class="stat-label">p-value</span><span class="stat-value" id="tp-pvalue">-</span></div>
+                            <div class="stat-result"><span class="stat-label">Result (α = 0.05)</span><span class="stat-value" id="tp-result">-</span></div>
+                            <div class="stat-result"><span class="stat-label">Effect Size (Cohen's d)</span><span class="stat-value" id="tp-cohend">-</span></div>
+                            <div class="stat-result"><span class="stat-label">95% CI for Mean Difference</span><span class="stat-value" id="tp-ci">-</span></div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <!-- TAB 3: Regression -->
+            <!-- TAB 3: Chi-Square -->
+            <div id="tab-chisquare" class="tab-content" data-print-title="Chi-Square Tests">
+                <div class="calculator-grid">
+                    <!-- Chi-Square Test of Independence -->
+                    <div class="calc-section">
+                        <h3>📊 Test of Independence</h3>
+                        <div class="example-btns">
+                            <span style="font-size:11px;color:var(--text-muted);align-self:center">Try:</span>
+                            <button class="example-btn" onclick="loadExample('chi-gender')">👫 Gender × preference</button>
+                            <button class="example-btn" onclick="loadExample('chi-treatment')">💊 Treatment × outcome</button>
+                        </div>
+                        <p class="helper-text" style="margin-bottom:16px">Enter a contingency table. Each row on a new line, values separated by commas. Rows = categories of variable 1, columns = categories of variable 2.</p>
+                        <div class="input-group">
+                            <label for="chi-data">Contingency table (observed frequencies):</label>
+                            <textarea id="chi-data" style="height:100px" placeholder="30, 20, 50&#10;25, 35, 40"></textarea>
+                        </div>
+                        <div class="input-row">
+                            <div class="input-group">
+                                <label for="chi-rowlabels">Row labels (optional, comma-separated):</label>
+                                <input type="text" id="chi-rowlabels" placeholder="e.g., Male, Female">
+                            </div>
+                            <div class="input-group">
+                                <label for="chi-collabels">Column labels (optional, comma-separated):</label>
+                                <input type="text" id="chi-collabels" placeholder="e.g., A, B, C">
+                            </div>
+                        </div>
+                        <div class="btn-row">
+                            <button class="btn" onclick="calculateChiIndependence()">Run χ² Test</button>
+                            <button class="formula-toggle" onclick="toggleFormula('chi-formula')">📐 Show formulas</button>
+                        </div>
+                        <div id="chi-formula" class="formula-box">
+                            <div class="formula-title">Formulas Used</div>
+                            Expected: Eᵢⱼ = (Row Total × Col Total) / Grand Total<br>
+                            χ² = Σ (Oᵢⱼ − Eᵢⱼ)² / Eᵢⱼ<br>
+                            df = (rows − 1)(cols − 1)<br>
+                            Cramér's V = √(χ² / (n × min(rows−1, cols−1)))
+                        </div>
+                        
+                        <div id="chi-results" class="results">
+                            <button class="copy-btn" onclick="copyResults('chi-results')">📋 Copy</button>
+                            <div class="stat-result"><span class="stat-label">Chi-Square Statistic (χ²)</span><span class="stat-value" id="chi-stat">-</span></div>
+                            <div class="stat-result"><span class="stat-label">Degrees of Freedom</span><span class="stat-value" id="chi-df">-</span></div>
+                            <div class="stat-result"><span class="stat-label">p-value</span><span class="stat-value" id="chi-pvalue">-</span></div>
+                            <div class="stat-result"><span class="stat-label">Result (α = 0.05)</span><span class="stat-value" id="chi-result">-</span></div>
+                            <div class="stat-result"><span class="stat-label">Effect Size (Cramér's V)</span><span class="stat-value" id="chi-cramers">-</span></div>
+                        </div>
+                        <div id="chi-tables" style="margin-top:16px"></div>
+                    </div>
+                    
+                    <!-- Chi-Square Goodness of Fit -->
+                    <div class="calc-section">
+                        <h3>🎯 Goodness of Fit</h3>
+                        <div class="example-btns">
+                            <span style="font-size:11px;color:var(--text-muted);align-self:center">Try:</span>
+                            <button class="example-btn" onclick="loadExample('gof-dice')">🎲 Fair die test</button>
+                            <button class="example-btn" onclick="loadExample('gof-genetics')">🧬 Mendelian ratio</button>
+                        </div>
+                        <p class="helper-text" style="margin-bottom:16px">Compare observed frequencies against expected frequencies (or a uniform distribution).</p>
+                        <div class="input-group">
+                            <label for="gof-observed">Observed frequencies (comma-separated):</label>
+                            <input type="text" id="gof-observed" placeholder="e.g., 18, 22, 16, 24, 10, 20">
+                        </div>
+                        <div class="input-group">
+                            <label for="gof-expected">Expected frequencies or proportions (leave blank for uniform):</label>
+                            <input type="text" id="gof-expected" placeholder="e.g., 18.33, 18.33, ... or 1/6, 1/6, ...">
+                            <p class="helper-text">Enter expected counts, or leave blank to assume equal frequencies across categories.</p>
+                        </div>
+                        <div class="input-group">
+                            <label for="gof-labels">Category labels (optional, comma-separated):</label>
+                            <input type="text" id="gof-labels" placeholder="e.g., 1, 2, 3, 4, 5, 6">
+                        </div>
+                        <div class="btn-row">
+                            <button class="btn" onclick="calculateGoodnessOfFit()">Run χ² Test</button>
+                            <button class="formula-toggle" onclick="toggleFormula('gof-formula')">📐 Show formulas</button>
+                        </div>
+                        <div id="gof-formula" class="formula-box">
+                            <div class="formula-title">Formulas Used</div>
+                            χ² = Σ (Oᵢ − Eᵢ)² / Eᵢ<br>
+                            df = k − 1 (k = number of categories)<br>
+                            p-value from χ² distribution
+                        </div>
+                        
+                        <div id="gof-results" class="results">
+                            <button class="copy-btn" onclick="copyResults('gof-results')">📋 Copy</button>
+                            <div class="stat-result"><span class="stat-label">Number of Categories (k)</span><span class="stat-value" id="gof-k">-</span></div>
+                            <div class="stat-result"><span class="stat-label">Chi-Square Statistic (χ²)</span><span class="stat-value" id="gof-stat">-</span></div>
+                            <div class="stat-result"><span class="stat-label">Degrees of Freedom</span><span class="stat-value" id="gof-df">-</span></div>
+                            <div class="stat-result"><span class="stat-label">p-value</span><span class="stat-value" id="gof-pvalue">-</span></div>
+                            <div class="stat-result"><span class="stat-label">Result (α = 0.05)</span><span class="stat-value" id="gof-result">-</span></div>
+                        </div>
+                        <div id="gof-table" style="margin-top:16px"></div>
+                        
+                        <div class="visualization">
+                            <canvas id="gof-chart" class="chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TAB 4: Regression -->
             <div id="tab-regression" class="tab-content" data-print-title="Linear Regression & Correlation">
                 <div class="calculator-grid single">
                     <div class="calc-section">
@@ -891,6 +1088,15 @@
                 // Sample size
                 'ss-small': { fields: {'ss-effect': '0.2', 'ss-power': '0.8', 'ss-alpha': '0.05'}, action: 'calculateSampleSize' },
                 'ss-large': { fields: {'ss-effect': '0.8', 'ss-power': '0.9', 'ss-alpha': '0.05'}, action: 'calculateSampleSize' },
+                // Paired t-test
+                'tp-before': { target: 'tp-data', data: '85, 90\n78, 82\n92, 88\n70, 75\n65, 72\n88, 95\n76, 80\n82, 86\n90, 91\n74, 79', fields: {'tp-tail': 'two'}, action: 'calculatePairedT' },
+                'tp-nosig': { target: 'tp-data', data: '82, 84\n75, 73\n90, 91\n68, 67\n85, 86\n79, 78\n88, 89\n72, 71', fields: {'tp-tail': 'two'}, action: 'calculatePairedT' },
+                // Chi-square independence
+                'chi-gender': { target: 'chi-data', data: '30, 20, 50\n25, 35, 40', fields: {'chi-rowlabels': 'Male, Female', 'chi-collabels': 'Comedy, Drama, Action'}, action: 'calculateChiIndependence' },
+                'chi-treatment': { target: 'chi-data', data: '45, 15\n30, 30\n35, 25', fields: {'chi-rowlabels': 'Drug A, Drug B, Placebo', 'chi-collabels': 'Improved, No change'}, action: 'calculateChiIndependence' },
+                // Goodness of fit
+                'gof-dice': { fields: {'gof-observed': '18, 22, 16, 24, 10, 20', 'gof-expected': '', 'gof-labels': '⚀, ⚁, ⚂, ⚃, ⚄, ⚅'}, action: 'calculateGoodnessOfFit' },
+                'gof-genetics': { fields: {'gof-observed': '315, 108, 101, 32', 'gof-expected': '312.75, 104.25, 104.25, 34.75', 'gof-labels': 'Round Yellow, Round Green, Wrinkled Yellow, Wrinkled Green'}, action: 'calculateGoodnessOfFit' },
             };
             
             const ex = examples[key];
@@ -1281,6 +1487,247 @@
             document.getElementById('samplesize-results').classList.add('active');
         }
         
+        // ────── Chi-Square Distribution ──────
+        function gammaCDF(a, x) {
+            // Regularized lower incomplete gamma function P(a, x)
+            if (x <= 0) return 0;
+            if (x < a + 1) {
+                // Series expansion
+                let sum = 1/a, term = 1/a;
+                for (let n = 1; n < 300; n++) {
+                    term *= x / (a + n);
+                    sum += term;
+                    if (Math.abs(term) < 1e-14 * Math.abs(sum)) break;
+                }
+                return sum * Math.exp(-x + a * Math.log(x) - lnGamma(a));
+            } else {
+                // Continued fraction for upper complement
+                let f = x - a + 1;
+                if (Math.abs(f) < 1e-30) f = 1e-30;
+                let c = 1e30, d = 1/f, h = d;
+                for (let i = 1; i < 300; i++) {
+                    let an = -i * (i - a);
+                    let bn = x - a + 1 + 2 * i;
+                    d = bn + an * d; if (Math.abs(d) < 1e-30) d = 1e-30;
+                    c = bn + an / c; if (Math.abs(c) < 1e-30) c = 1e-30;
+                    d = 1/d;
+                    let del = d * c;
+                    h *= del;
+                    if (Math.abs(del - 1) < 1e-14) break;
+                }
+                return 1 - Math.exp(-x + a * Math.log(x) - lnGamma(a)) * h;
+            }
+        }
+        
+        function chiSquarePValue(x, df) {
+            if (x <= 0) return 1;
+            return 1 - gammaCDF(df / 2, x / 2);
+        }
+        
+        // ────── Paired t-Test ──────
+        function calculatePairedT() {
+            const pairs = parsePairs(document.getElementById('tp-data').value);
+            const tail = document.getElementById('tp-tail').value;
+            if (pairs.length < 2) { alert('Need at least 2 paired observations'); return; }
+            
+            const diffs = pairs.map(p => p[0] - p[1]);
+            const n = diffs.length;
+            const dMean = mean(diffs);
+            const dSD = standardDeviation(diffs);
+            const se = dSD / Math.sqrt(n);
+            const t = dMean / se;
+            const df = n - 1;
+            const pValue = tPValue(t, df, tail);
+            const cohensD = Math.abs(dMean) / dSD;
+            
+            // 95% CI for mean difference
+            const tCrit = tCritical(df, 0.05);
+            const margin = tCrit * se;
+            
+            const tailLabel = tail === 'two' ? 'two-tailed' : (tail === 'left' ? 'left-tailed' : 'right-tailed');
+            
+            document.getElementById('tp-n').textContent = n;
+            document.getElementById('tp-meandiff').textContent = dMean.toFixed(4);
+            document.getElementById('tp-sddiff').textContent = dSD.toFixed(4);
+            document.getElementById('tp-stat').textContent = t.toFixed(4);
+            document.getElementById('tp-df').textContent = df;
+            document.getElementById('tp-pvalue').textContent = `${pValue < 0.0001 ? pValue.toExponential(2) : pValue.toFixed(4)} (${tailLabel})`;
+            document.getElementById('tp-result').textContent = pValue < 0.05 ? 'Reject H₀ ✓' : 'Fail to reject H₀';
+            document.getElementById('tp-cohend').textContent = `${cohensD.toFixed(4)} (${cohensD < 0.2 ? 'negligible' : cohensD < 0.5 ? 'small' : cohensD < 0.8 ? 'medium' : 'large'})`;
+            document.getElementById('tp-ci').textContent = `[${(dMean - margin).toFixed(4)}, ${(dMean + margin).toFixed(4)}]`;
+            document.getElementById('tp-results').classList.add('active');
+        }
+        
+        // ────── Chi-Square Test of Independence ──────
+        function parseContingencyTable(input) {
+            const rows = input.trim().split('\n').filter(r => r.trim());
+            return rows.map(row => row.split(/[,\t]+/).map(x => parseFloat(x.trim())).filter(x => !isNaN(x)));
+        }
+        
+        function calculateChiIndependence() {
+            const table = parseContingencyTable(document.getElementById('chi-data').value);
+            if (table.length < 2) { alert('Need at least 2 rows'); return; }
+            const nCols = table[0].length;
+            if (nCols < 2) { alert('Need at least 2 columns'); return; }
+            if (table.some(r => r.length !== nCols)) { alert('All rows must have the same number of columns'); return; }
+            
+            const nRows = table.length;
+            const rowTotals = table.map(r => r.reduce((a, b) => a + b, 0));
+            const colTotals = Array(nCols).fill(0);
+            for (let j = 0; j < nCols; j++) {
+                for (let i = 0; i < nRows; i++) colTotals[j] += table[i][j];
+            }
+            const grandTotal = rowTotals.reduce((a, b) => a + b, 0);
+            
+            // Expected frequencies
+            const expected = table.map((row, i) => row.map((_, j) => (rowTotals[i] * colTotals[j]) / grandTotal));
+            
+            // Chi-square statistic
+            let chiSq = 0;
+            for (let i = 0; i < nRows; i++) {
+                for (let j = 0; j < nCols; j++) {
+                    chiSq += (table[i][j] - expected[i][j]) ** 2 / expected[i][j];
+                }
+            }
+            
+            const df = (nRows - 1) * (nCols - 1);
+            const pValue = chiSquarePValue(chiSq, df);
+            const cramersV = Math.sqrt(chiSq / (grandTotal * Math.min(nRows - 1, nCols - 1)));
+            
+            // Get labels
+            const rowLabels = document.getElementById('chi-rowlabels').value.split(',').map(s => s.trim()).filter(Boolean);
+            const colLabels = document.getElementById('chi-collabels').value.split(',').map(s => s.trim()).filter(Boolean);
+            
+            document.getElementById('chi-stat').textContent = chiSq.toFixed(4);
+            document.getElementById('chi-df').textContent = df;
+            document.getElementById('chi-pvalue').textContent = pValue < 0.0001 ? pValue.toExponential(2) : pValue.toFixed(4);
+            document.getElementById('chi-result').textContent = pValue < 0.05 ? 'Reject H₀ (variables are associated) ✓' : 'Fail to reject H₀ (no evidence of association)';
+            document.getElementById('chi-cramers').textContent = `${cramersV.toFixed(4)} (${cramersV < 0.1 ? 'negligible' : cramersV < 0.3 ? 'small' : cramersV < 0.5 ? 'medium' : 'large'})`;
+            document.getElementById('chi-results').classList.add('active');
+            
+            // Build observed vs expected tables
+            const tablesDiv = document.getElementById('chi-tables');
+            let html = '';
+            
+            // Observed table
+            html += buildContingencyHTML('Observed Frequencies', table, rowLabels, colLabels, rowTotals, colTotals, grandTotal, null);
+            
+            // Expected table
+            html += buildContingencyHTML('Expected Frequencies', expected.map(r => r.map(v => parseFloat(v.toFixed(2)))), rowLabels, colLabels, null, null, null, null);
+            
+            // Contribution table (O-E)²/E
+            const contrib = table.map((row, i) => row.map((v, j) => parseFloat(((v - expected[i][j]) ** 2 / expected[i][j]).toFixed(3))));
+            html += buildContingencyHTML('Contributions to χ² — (O−E)²/E', contrib, rowLabels, colLabels, null, null, null, 'highlight');
+            
+            tablesDiv.innerHTML = html;
+        }
+        
+        function buildContingencyHTML(caption, data, rowLabels, colLabels, rowTotals, colTotals, grandTotal, cellClass) {
+            const nRows = data.length, nCols = data[0].length;
+            let html = '<table class="stat-table"><caption>' + caption + '</caption><thead><tr><th></th>';
+            for (let j = 0; j < nCols; j++) {
+                html += '<th>' + (colLabels[j] || 'C' + (j+1)) + '</th>';
+            }
+            if (rowTotals) html += '<th>Total</th>';
+            html += '</tr></thead><tbody>';
+            
+            for (let i = 0; i < nRows; i++) {
+                html += '<tr><th>' + (rowLabels[i] || 'R' + (i+1)) + '</th>';
+                for (let j = 0; j < nCols; j++) {
+                    const cls = cellClass ? ' class="' + cellClass + '"' : '';
+                    html += '<td' + cls + '>' + data[i][j] + '</td>';
+                }
+                if (rowTotals) html += '<td class="total-cell">' + rowTotals[i] + '</td>';
+                html += '</tr>';
+            }
+            
+            if (colTotals) {
+                html += '<tr><th>Total</th>';
+                for (let j = 0; j < nCols; j++) {
+                    html += '<td class="total-cell">' + colTotals[j] + '</td>';
+                }
+                html += '<td class="total-cell">' + grandTotal + '</td></tr>';
+            }
+            
+            html += '</tbody></table>';
+            return html;
+        }
+        
+        // ────── Chi-Square Goodness of Fit ──────
+        function calculateGoodnessOfFit() {
+            const obsInput = document.getElementById('gof-observed').value;
+            const expInput = document.getElementById('gof-expected').value.trim();
+            const labelsInput = document.getElementById('gof-labels').value;
+            
+            const observed = obsInput.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
+            if (observed.length < 2) { alert('Need at least 2 categories'); return; }
+            
+            const k = observed.length;
+            const total = observed.reduce((a, b) => a + b, 0);
+            let expected;
+            
+            if (expInput === '') {
+                // Uniform distribution
+                expected = Array(k).fill(total / k);
+            } else {
+                expected = expInput.split(',').map(x => {
+                    const trimmed = x.trim();
+                    // Support fraction notation like "1/6"
+                    if (trimmed.includes('/')) {
+                        const parts = trimmed.split('/');
+                        return parseFloat(parts[0]) / parseFloat(parts[1]);
+                    }
+                    return parseFloat(trimmed);
+                }).filter(x => !isNaN(x));
+                
+                if (expected.length !== k) { alert('Observed and expected must have the same number of categories'); return; }
+                
+                // If expected values sum to ~1 (proportions), scale to counts
+                const expSum = expected.reduce((a, b) => a + b, 0);
+                if (Math.abs(expSum - 1) < 0.01) {
+                    expected = expected.map(e => e * total);
+                } else if (Math.abs(expSum - total) > 0.5) {
+                    // Rescale expected to match observed total
+                    expected = expected.map(e => e * total / expSum);
+                }
+            }
+            
+            // Chi-square statistic
+            let chiSq = 0;
+            for (let i = 0; i < k; i++) {
+                chiSq += (observed[i] - expected[i]) ** 2 / expected[i];
+            }
+            
+            const df = k - 1;
+            const pValue = chiSquarePValue(chiSq, df);
+            
+            const labels = labelsInput.split(',').map(s => s.trim()).filter(Boolean);
+            
+            document.getElementById('gof-k').textContent = k;
+            document.getElementById('gof-stat').textContent = chiSq.toFixed(4);
+            document.getElementById('gof-df').textContent = df;
+            document.getElementById('gof-pvalue').textContent = pValue < 0.0001 ? pValue.toExponential(2) : pValue.toFixed(4);
+            document.getElementById('gof-result').textContent = pValue < 0.05 ? 'Reject H₀ (data does not fit expected) ✓' : 'Fail to reject H₀ (data fits expected)';
+            document.getElementById('gof-results').classList.add('active');
+            
+            // Build comparison table
+            const tableDiv = document.getElementById('gof-table');
+            let html = '<table class="stat-table"><caption>Observed vs Expected</caption><thead><tr><th>Category</th><th>Observed</th><th>Expected</th><th>(O−E)²/E</th></tr></thead><tbody>';
+            for (let i = 0; i < k; i++) {
+                const contrib = ((observed[i] - expected[i]) ** 2 / expected[i]);
+                html += '<tr><td>' + (labels[i] || 'Cat ' + (i+1)) + '</td>';
+                html += '<td>' + observed[i] + '</td>';
+                html += '<td>' + expected[i].toFixed(2) + '</td>';
+                html += '<td class="highlight">' + contrib.toFixed(3) + '</td></tr>';
+            }
+            html += '<tr><td class="total-cell">Total</td><td class="total-cell">' + total + '</td><td class="total-cell">' + expected.reduce((a,b)=>a+b,0).toFixed(2) + '</td><td class="total-cell">' + chiSq.toFixed(3) + '</td></tr>';
+            html += '</tbody></table>';
+            tableDiv.innerHTML = html;
+            
+            // Draw bar chart
+            drawGofChart(observed, expected, labels);
+        }
+        
         // ────── Charts ──────
         
         function getChartColors() {
@@ -1440,6 +1887,81 @@
             ctx.textAlign = 'center';
             ctx.fillText('x', width / 2, height - 5);
             ctx.save(); ctx.translate(15, pad.top + ch/2); ctx.rotate(-Math.PI/2); ctx.fillText('y', 0, 0); ctx.restore();
+        }
+        
+        function drawGofChart(observed, expected, labels) {
+            const canvas = document.getElementById('gof-chart');
+            const ctx = canvas.getContext('2d');
+            const colors = getChartColors();
+            
+            canvas.width = canvas.offsetWidth * devicePixelRatio;
+            canvas.height = canvas.offsetHeight * devicePixelRatio;
+            ctx.scale(devicePixelRatio, devicePixelRatio);
+            
+            const width = canvas.offsetWidth, height = canvas.offsetHeight;
+            ctx.clearRect(0, 0, width, height);
+            
+            const k = observed.length;
+            const maxVal = Math.max(...observed, ...expected) * 1.15;
+            
+            const pad = { top: 35, right: 20, bottom: 55, left: 50 };
+            const cw = width - pad.left - pad.right, ch = height - pad.top - pad.bottom;
+            const groupWidth = cw / k;
+            const barWidth = groupWidth * 0.35;
+            
+            // Grid
+            ctx.strokeStyle = colors.grid; ctx.lineWidth = 1;
+            for (let i = 1; i <= 4; i++) {
+                const y = pad.top + ch - (i / 4) * ch;
+                ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(width - pad.right, y); ctx.stroke();
+                ctx.fillStyle = colors.label; ctx.font = '10px SF Mono, Monaco, monospace'; ctx.textAlign = 'right';
+                ctx.fillText(Math.round(maxVal * i / 4), pad.left - 8, y + 4);
+            }
+            
+            // Bars
+            for (let i = 0; i < k; i++) {
+                const groupX = pad.left + i * groupWidth;
+                
+                // Observed bar
+                const obsH = (observed[i] / maxVal) * ch;
+                const obsX = groupX + groupWidth * 0.1;
+                ctx.fillStyle = colors.bar;
+                ctx.fillRect(obsX, pad.top + ch - obsH, barWidth, obsH);
+                
+                // Expected bar
+                const expH = (expected[i] / maxVal) * ch;
+                const expX = groupX + groupWidth * 0.1 + barWidth + 2;
+                ctx.fillStyle = colors.line;
+                ctx.globalAlpha = 0.5;
+                ctx.fillRect(expX, pad.top + ch - expH, barWidth, expH);
+                ctx.globalAlpha = 1;
+                
+                // Label
+                ctx.fillStyle = colors.label; ctx.font = '11px -apple-system, sans-serif'; ctx.textAlign = 'center';
+                const label = labels[i] || 'Cat ' + (i+1);
+                ctx.fillText(label.length > 8 ? label.slice(0, 7) + '…' : label, groupX + groupWidth / 2, pad.top + ch + 18);
+            }
+            
+            // Axes
+            ctx.strokeStyle = colors.axis; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top + ch); ctx.lineTo(width - pad.right, pad.top + ch); ctx.stroke();
+            
+            // Title
+            ctx.fillStyle = colors.label; ctx.font = '13px -apple-system, BlinkMacSystemFont, sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('Observed vs Expected Frequencies', width / 2, 18);
+            
+            // Legend
+            const legendX = width - pad.right - 140;
+            ctx.fillStyle = colors.bar;
+            ctx.fillRect(legendX, pad.top + 2, 12, 12);
+            ctx.fillStyle = colors.label; ctx.font = '11px -apple-system, sans-serif'; ctx.textAlign = 'left';
+            ctx.fillText('Observed', legendX + 16, pad.top + 12);
+            
+            ctx.fillStyle = colors.line; ctx.globalAlpha = 0.5;
+            ctx.fillRect(legendX, pad.top + 20, 12, 12);
+            ctx.globalAlpha = 1;
+            ctx.fillStyle = colors.label;
+            ctx.fillText('Expected', legendX + 16, pad.top + 30);
         }
         
         function redrawCharts() {
