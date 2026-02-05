@@ -547,6 +547,7 @@
             <button class="tab-btn active" onclick="switchTab('basics')">📊 Basics</button>
             <button class="tab-btn" onclick="switchTab('tests')">🎯 Hypothesis Tests</button>
             <button class="tab-btn" onclick="switchTab('chisquare')">🎲 Chi-Square</button>
+            <button class="tab-btn" onclick="switchTab('anova')">🔬 ANOVA</button>
             <button class="tab-btn" onclick="switchTab('regression')">📈 Regression</button>
             <button class="tab-btn" onclick="switchTab('power')">📐 Power & Sample Size</button>
         </nav>
@@ -914,7 +915,57 @@
                 </div>
             </div>
             
-            <!-- TAB 4: Regression -->
+            <!-- TAB: ANOVA -->
+            <div id="tab-anova" class="tab-content" data-print-title="One-Way ANOVA">
+                <div class="calculator-grid single">
+                    <div class="calc-section">
+                        <h3>🔬 One-Way ANOVA</h3>
+                        <div class="example-btns">
+                            <span style="font-size:11px;color:var(--text-muted);align-self:center">Try:</span>
+                            <button class="example-btn" onclick="loadExample('anova-plant')">🌱 Plant growth</button>
+                            <button class="example-btn" onclick="loadExample('anova-scores')">📝 Test scores</button>
+                            <button class="example-btn" onclick="loadExample('anova-nosig')">🔀 No difference</button>
+                        </div>
+                        <p class="helper-text" style="margin-bottom:16px">Enter group data. Each line: <code>GroupName: value1, value2, ...</code><br>At least 2 groups required.</p>
+                        <div class="input-group">
+                            <label for="anova-data">Group Data:</label>
+                            <textarea id="anova-data" style="height:140px" placeholder="Control: 4.2, 3.8, 4.1, 3.9, 4.0&#10;Treatment A: 5.1, 5.3, 4.9, 5.0, 5.2&#10;Treatment B: 6.0, 5.8, 6.2, 5.9, 6.1"></textarea>
+                        </div>
+                        <div class="btn-row">
+                            <button class="btn" onclick="calculateANOVA()">Run ANOVA</button>
+                            <button class="formula-toggle" onclick="toggleFormula('anova-formula')">📐 Show formulas</button>
+                        </div>
+                        <div id="anova-formula" class="formula-box">
+                            <div class="formula-title">Formulas Used</div>
+                            SS<sub>between</sub> = Σ nⱼ(x̄ⱼ − x̄)² — variation between group means<br>
+                            SS<sub>within</sub> = ΣΣ (xᵢⱼ − x̄ⱼ)² — variation within groups<br>
+                            MS = SS / df,  F = MS<sub>between</sub> / MS<sub>within</sub><br>
+                            η² = SS<sub>between</sub> / SS<sub>total</sub> (effect size)<br>
+                            Post-hoc: Bonferroni-corrected pairwise t-tests (α / number of comparisons)
+                        </div>
+
+                        <div id="anova-results" class="results">
+                            <button class="copy-btn" onclick="copyResults('anova-results')">📋 Copy</button>
+                            <div class="stat-result"><span class="stat-label">Number of Groups (k)</span><span class="stat-value" id="anova-k">-</span></div>
+                            <div class="stat-result"><span class="stat-label">Total N</span><span class="stat-value" id="anova-n">-</span></div>
+                            <div class="stat-result"><span class="stat-label">F-Statistic</span><span class="stat-value" id="anova-f">-</span></div>
+                            <div class="stat-result"><span class="stat-label">p-value</span><span class="stat-value" id="anova-p">-</span></div>
+                            <div class="stat-result"><span class="stat-label">Effect Size (η²)</span><span class="stat-value" id="anova-eta2">-</span></div>
+                            <div class="stat-result"><span class="stat-label">Conclusion</span><span class="stat-value" id="anova-conclusion">-</span></div>
+                        </div>
+
+                        <div id="anova-table-container" style="display:none; margin-top:16px;"></div>
+                        <div id="anova-groups-container" style="display:none; margin-top:16px;"></div>
+                        <div id="anova-posthoc-container" style="display:none; margin-top:16px;"></div>
+
+                        <div class="visualization">
+                            <canvas id="boxplot" class="chart" style="height:350px"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: Regression -->
             <div id="tab-regression" class="tab-content" data-print-title="Linear Regression & Correlation">
                 <div class="calculator-grid single">
                     <div class="calc-section">
@@ -957,11 +1008,31 @@
                         <div class="visualization">
                             <canvas id="scatterplot" class="chart" style="height:350px"></canvas>
                         </div>
+
+                        <div class="visualization" id="residual-plot-container" style="display:none">
+                            <canvas id="residualplot" class="chart" style="height:250px"></canvas>
+                        </div>
+
+                        <div id="reg-predict-section" style="display:none; margin-top:16px; padding:16px; background:var(--section-bg); border-radius:8px; border:1px solid var(--section-border);">
+                            <h4 style="margin-bottom:8px; color:var(--text-primary); font-size:14px;">🔮 Prediction</h4>
+                            <div style="display:flex; gap:8px; align-items:flex-end; flex-wrap:wrap;">
+                                <div class="input-group" style="flex:1; min-width:120px;">
+                                    <label for="reg-predict-x">Predict y for x =</label>
+                                    <input type="number" id="reg-predict-x" step="any" placeholder="Enter x value">
+                                </div>
+                                <button class="btn" onclick="predictY()" style="height:42px;">Predict</button>
+                            </div>
+                            <div id="reg-predict-result" style="margin-top:12px; display:none;">
+                                <div class="stat-result"><span class="stat-label">Predicted ŷ</span><span class="stat-value" id="reg-pred-y">-</span></div>
+                                <div class="stat-result"><span class="stat-label">95% Confidence Interval (mean)</span><span class="stat-value" id="reg-pred-ci">-</span></div>
+                                <div class="stat-result"><span class="stat-label">95% Prediction Interval (individual)</span><span class="stat-value" id="reg-pred-pi">-</span></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <!-- TAB 4: Power & Sample Size -->
+            <!-- TAB: Power & Sample Size -->
             <div id="tab-power" class="tab-content" data-print-title="Power Analysis & Sample Size">
                 <div class="calculator-grid single">
                     <div class="calc-section">
@@ -1097,6 +1168,10 @@
                 // Goodness of fit
                 'gof-dice': { fields: {'gof-observed': '18, 22, 16, 24, 10, 20', 'gof-expected': '', 'gof-labels': '⚀, ⚁, ⚂, ⚃, ⚄, ⚅'}, action: 'calculateGoodnessOfFit' },
                 'gof-genetics': { fields: {'gof-observed': '315, 108, 101, 32', 'gof-expected': '312.75, 104.25, 104.25, 34.75', 'gof-labels': 'Round Yellow, Round Green, Wrinkled Yellow, Wrinkled Green'}, action: 'calculateGoodnessOfFit' },
+                // ANOVA
+                'anova-plant': { target: 'anova-data', data: 'Control: 4.81, 4.17, 4.41, 3.59, 5.87, 3.83, 6.03, 4.89, 4.32, 4.69\nLow Dose: 4.50, 5.87, 5.68, 6.22, 6.66, 4.56, 5.12, 5.78, 5.34, 5.92\nHigh Dose: 6.31, 5.12, 5.54, 5.50, 5.37, 5.29, 4.92, 6.15, 5.80, 5.26', action: 'calculateANOVA' },
+                'anova-scores': { target: 'anova-data', data: 'Lecture: 72, 68, 75, 71, 65, 74, 69, 73\nOnline: 78, 82, 80, 85, 76, 81, 79, 83\nHybrid: 85, 88, 82, 90, 84, 87, 86, 89', action: 'calculateANOVA' },
+                'anova-nosig': { target: 'anova-data', data: 'Group A: 50, 55, 48, 52, 51, 49, 53\nGroup B: 51, 49, 54, 50, 52, 48, 53\nGroup C: 49, 52, 50, 53, 48, 51, 50', action: 'calculateANOVA' },
             };
             
             const ex = examples[key];
@@ -1129,7 +1204,13 @@
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('tab-' + name).classList.add('active');
-            event.currentTarget.classList.add('active');
+            if (typeof event !== 'undefined' && event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn').forEach(b => {
+                    if (b.getAttribute('onclick') === "switchTab('" + name + "')") b.classList.add('active');
+                });
+            }
         }
         
         // ────── Copy Results ──────
@@ -1462,7 +1543,17 @@
             document.getElementById('reg-ttest').textContent = `t(${df}) = ${tStat.toFixed(4)}, p = ${pSlope < 0.0001 ? pSlope.toExponential(2) : pSlope.toFixed(4)}${pSlope < 0.05 ? ' ✓' : ''}`;
             document.getElementById('reg-results').classList.add('active');
             
+            // Store state for prediction
+            _regState = { slope, intercept, se, ssxx, mx: mean(xs), n };
+
+            // Compute residuals
+            const residuals = ys.map((y, i) => y - (intercept + slope * xs[i]));
+
             drawScatterplot(xs, ys, slope, intercept, r);
+            drawResidualPlot(xs, residuals);
+
+            // Show prediction section
+            document.getElementById('reg-predict-section').style.display = 'block';
         }
         
         function calculateSampleSize() {
@@ -1889,6 +1980,347 @@
             ctx.save(); ctx.translate(15, pad.top + ch/2); ctx.rotate(-Math.PI/2); ctx.fillText('y', 0, 0); ctx.restore();
         }
         
+        // ────── ANOVA ──────
+        function parseGroupData(input) {
+            const groups = [];
+            const lines = input.trim().split('\n');
+            for (const line of lines) {
+                const colonIdx = line.indexOf(':');
+                if (colonIdx === -1) continue;
+                const name = line.slice(0, colonIdx).trim();
+                const values = line.slice(colonIdx + 1).split(/[,\t]+/).map(s => parseFloat(s.trim())).filter(v => !isNaN(v));
+                if (values.length > 0) groups.push({ name, values });
+            }
+            return groups;
+        }
+
+        function fCDF(x, d1, d2) {
+            if (x <= 0) return 0;
+            const z = d1 * x / (d1 * x + d2);
+            return betaIncomplete(d1 / 2, d2 / 2, z);
+        }
+
+        function calculateANOVA() {
+            const groups = parseGroupData(document.getElementById('anova-data').value);
+            if (groups.length < 2) { alert('Need at least 2 groups'); return; }
+            for (const g of groups) {
+                if (g.values.length < 2) { alert(`Group "${g.name}" needs at least 2 values`); return; }
+            }
+
+            const k = groups.length;
+            const allValues = groups.flatMap(g => g.values);
+            const N = allValues.length;
+            const grandMean = mean(allValues);
+
+            // Group statistics
+            const groupStats = groups.map(g => ({
+                name: g.name,
+                n: g.values.length,
+                mean: mean(g.values),
+                sd: standardDeviation(g.values),
+                min: Math.min(...g.values),
+                q1: quartile(g.values, 0.25),
+                median: median(g.values),
+                q3: quartile(g.values, 0.75),
+                max: Math.max(...g.values),
+                values: g.values
+            }));
+
+            // Sum of squares
+            let ssBetween = 0, ssWithin = 0;
+            for (const g of groupStats) {
+                ssBetween += g.n * (g.mean - grandMean) ** 2;
+                for (const v of g.values) {
+                    ssWithin += (v - g.mean) ** 2;
+                }
+            }
+            const ssTotal = ssBetween + ssWithin;
+            const dfBetween = k - 1;
+            const dfWithin = N - k;
+            const dfTotal = N - 1;
+            const msBetween = ssBetween / dfBetween;
+            const msWithin = ssWithin / dfWithin;
+            const fStat = msBetween / msWithin;
+            const pValue = 1 - fCDF(fStat, dfBetween, dfWithin);
+            const eta2 = ssBetween / ssTotal;
+
+            // Display results
+            document.getElementById('anova-k').textContent = k;
+            document.getElementById('anova-n').textContent = N;
+            document.getElementById('anova-f').textContent = `F(${dfBetween}, ${dfWithin}) = ${fStat.toFixed(4)}`;
+            document.getElementById('anova-p').textContent = `${pValue < 0.0001 ? pValue.toExponential(2) : pValue.toFixed(4)}${pValue < 0.05 ? ' ✓ significant' : ''}`;
+            document.getElementById('anova-eta2').textContent = `${eta2.toFixed(4)} (${(eta2 * 100).toFixed(1)}% of variance) — ${eta2 < 0.01 ? 'negligible' : eta2 < 0.06 ? 'small' : eta2 < 0.14 ? 'medium' : 'large'}`;
+            document.getElementById('anova-conclusion').textContent = pValue < 0.05
+                ? 'Reject H₀: at least one group mean differs significantly (α = 0.05)'
+                : 'Fail to reject H₀: no significant difference between group means (α = 0.05)';
+            document.getElementById('anova-results').classList.add('active');
+
+            // ANOVA table
+            const tableContainer = document.getElementById('anova-table-container');
+            tableContainer.style.display = 'block';
+            tableContainer.innerHTML = `
+                <table class="stat-table">
+                    <caption>ANOVA Table</caption>
+                    <thead><tr><th>Source</th><th>SS</th><th>df</th><th>MS</th><th>F</th><th>p</th></tr></thead>
+                    <tbody>
+                        <tr><td><strong>Between</strong></td><td>${ssBetween.toFixed(4)}</td><td>${dfBetween}</td><td>${msBetween.toFixed(4)}</td><td class="highlight">${fStat.toFixed(4)}</td><td class="highlight">${pValue < 0.0001 ? pValue.toExponential(2) : pValue.toFixed(4)}</td></tr>
+                        <tr><td><strong>Within</strong></td><td>${ssWithin.toFixed(4)}</td><td>${dfWithin}</td><td>${msWithin.toFixed(4)}</td><td>—</td><td>—</td></tr>
+                        <tr class="total-cell"><td><strong>Total</strong></td><td>${ssTotal.toFixed(4)}</td><td>${dfTotal}</td><td>—</td><td>—</td><td>—</td></tr>
+                    </tbody>
+                </table>`;
+
+            // Group statistics table
+            const groupsContainer = document.getElementById('anova-groups-container');
+            groupsContainer.style.display = 'block';
+            let groupHTML = '<table class="stat-table"><caption>Group Statistics</caption><thead><tr><th>Group</th><th>n</th><th>Mean</th><th>SD</th><th>Min</th><th>Median</th><th>Max</th></tr></thead><tbody>';
+            for (const g of groupStats) {
+                groupHTML += `<tr><td><strong>${g.name}</strong></td><td>${g.n}</td><td>${g.mean.toFixed(4)}</td><td>${g.sd.toFixed(4)}</td><td>${g.min.toFixed(2)}</td><td>${g.median.toFixed(2)}</td><td>${g.max.toFixed(2)}</td></tr>`;
+            }
+            groupHTML += '</tbody></table>';
+            groupsContainer.innerHTML = groupHTML;
+
+            // Post-hoc pairwise comparisons (Bonferroni)
+            const posthocContainer = document.getElementById('anova-posthoc-container');
+            if (pValue < 0.05 && k > 2) {
+                const numComparisons = k * (k - 1) / 2;
+                const bonferroniAlpha = 0.05 / numComparisons;
+                let phHTML = `<table class="stat-table"><caption>Post-Hoc Pairwise Comparisons (Bonferroni, α<sub>adj</sub> = ${bonferroniAlpha.toFixed(4)})</caption><thead><tr><th>Comparison</th><th>Mean Diff</th><th>t</th><th>df</th><th>p</th><th>Sig?</th></tr></thead><tbody>`;
+
+                for (let i = 0; i < k; i++) {
+                    for (let j = i + 1; j < k; j++) {
+                        const gi = groupStats[i], gj = groupStats[j];
+                        const meanDiff = gi.mean - gj.mean;
+                        // Pooled within-group variance (MSE) for post-hoc
+                        const sePooled = Math.sqrt(msWithin * (1/gi.n + 1/gj.n));
+                        const tVal = meanDiff / sePooled;
+                        const pairDf = dfWithin;
+                        const pairP = tPValue(tVal, pairDf, 'two');
+                        const adjP = Math.min(pairP * numComparisons, 1);
+                        const sig = adjP < 0.05;
+                        phHTML += `<tr><td>${gi.name} vs ${gj.name}</td><td>${meanDiff.toFixed(4)}</td><td>${tVal.toFixed(4)}</td><td>${pairDf}</td><td>${adjP < 0.0001 ? adjP.toExponential(2) : adjP.toFixed(4)}</td><td>${sig ? '✓' : '—'}</td></tr>`;
+                    }
+                }
+                phHTML += '</tbody></table>';
+                posthocContainer.innerHTML = phHTML;
+                posthocContainer.style.display = 'block';
+            } else if (pValue < 0.05 && k === 2) {
+                posthocContainer.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:8px;">Only 2 groups — the F-test result is equivalent to a two-sample t-test.</p>';
+                posthocContainer.style.display = 'block';
+            } else {
+                posthocContainer.innerHTML = '<p style="color:var(--text-muted);font-size:13px;padding:8px;">Post-hoc comparisons not shown (overall ANOVA not significant).</p>';
+                posthocContainer.style.display = 'block';
+            }
+
+            drawBoxPlot(groupStats);
+        }
+
+        function drawBoxPlot(groupStats) {
+            const canvas = document.getElementById('boxplot');
+            const ctx = canvas.getContext('2d');
+            const colors = getChartColors();
+
+            canvas.width = canvas.offsetWidth * devicePixelRatio;
+            canvas.height = canvas.offsetHeight * devicePixelRatio;
+            ctx.scale(devicePixelRatio, devicePixelRatio);
+
+            const width = canvas.offsetWidth, height = canvas.offsetHeight;
+            ctx.clearRect(0, 0, width, height);
+
+            const k = groupStats.length;
+            const allValues = groupStats.flatMap(g => g.values);
+            const globalMin = Math.min(...allValues), globalMax = Math.max(...allValues);
+            const range = globalMax - globalMin || 1;
+            const yPad = range * 0.1;
+            const y0 = globalMin - yPad, y1 = globalMax + yPad;
+
+            const pad = { top: 30, right: 30, bottom: 55, left: 60 };
+            const cw = width - pad.left - pad.right, ch = height - pad.top - pad.bottom;
+            const groupWidth = cw / k;
+            const boxWidth = Math.min(groupWidth * 0.5, 60);
+
+            function toCanvasY(v) { return pad.top + ch - ((v - y0) / (y1 - y0)) * ch; }
+
+            // Grid lines
+            ctx.strokeStyle = colors.grid; ctx.lineWidth = 1;
+            const nTicks = 5;
+            for (let i = 0; i <= nTicks; i++) {
+                const y = pad.top + (i / nTicks) * ch;
+                ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(width - pad.right, y); ctx.stroke();
+                const val = y1 - (i / nTicks) * (y1 - y0);
+                ctx.fillStyle = colors.label; ctx.font = '10px SF Mono, Monaco, monospace'; ctx.textAlign = 'right';
+                ctx.fillText(val.toFixed(1), pad.left - 8, y + 4);
+            }
+
+            // Box plots
+            const boxColors = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#84cc16'];
+            for (let i = 0; i < k; i++) {
+                const g = groupStats[i];
+                const centerX = pad.left + (i + 0.5) * groupWidth;
+                const boxLeft = centerX - boxWidth / 2;
+                const boxRight = centerX + boxWidth / 2;
+                const color = boxColors[i % boxColors.length];
+
+                const q1Y = toCanvasY(g.q1);
+                const q3Y = toCanvasY(g.q3);
+                const medY = toCanvasY(g.median);
+                const minY = toCanvasY(g.min);
+                const maxY = toCanvasY(g.max);
+                const meanY = toCanvasY(g.mean);
+
+                // Box fill (translucent)
+                ctx.fillStyle = color + '22';
+                ctx.fillRect(boxLeft, q3Y, boxWidth, q1Y - q3Y);
+
+                // Box border
+                ctx.strokeStyle = color; ctx.lineWidth = 2;
+                ctx.strokeRect(boxLeft, q3Y, boxWidth, q1Y - q3Y);
+
+                // Median line
+                ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+                ctx.beginPath(); ctx.moveTo(boxLeft, medY); ctx.lineTo(boxRight, medY); ctx.stroke();
+
+                // Mean marker (diamond)
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.moveTo(centerX, meanY - 4);
+                ctx.lineTo(centerX + 4, meanY);
+                ctx.lineTo(centerX, meanY + 4);
+                ctx.lineTo(centerX - 4, meanY);
+                ctx.closePath();
+                ctx.fill();
+
+                // Whiskers
+                ctx.strokeStyle = color; ctx.lineWidth = 1.5;
+                // Lower whisker
+                ctx.beginPath(); ctx.moveTo(centerX, q1Y); ctx.lineTo(centerX, minY); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(centerX - boxWidth * 0.25, minY); ctx.lineTo(centerX + boxWidth * 0.25, minY); ctx.stroke();
+                // Upper whisker
+                ctx.beginPath(); ctx.moveTo(centerX, q3Y); ctx.lineTo(centerX, maxY); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(centerX - boxWidth * 0.25, maxY); ctx.lineTo(centerX + boxWidth * 0.25, maxY); ctx.stroke();
+
+                // Individual data points (jittered)
+                ctx.fillStyle = color + '66';
+                for (const v of g.values) {
+                    const jitter = (Math.random() - 0.5) * boxWidth * 0.3;
+                    ctx.beginPath(); ctx.arc(centerX + jitter, toCanvasY(v), 2.5, 0, Math.PI * 2); ctx.fill();
+                }
+
+                // Group label
+                ctx.fillStyle = colors.label; ctx.font = '12px -apple-system, BlinkMacSystemFont, sans-serif'; ctx.textAlign = 'center';
+                const label = g.name.length > 12 ? g.name.slice(0, 11) + '…' : g.name;
+                ctx.fillText(label, centerX, pad.top + ch + 20);
+                ctx.font = '10px SF Mono, Monaco, monospace'; ctx.fillStyle = colors.label;
+                ctx.fillText(`n=${g.n}`, centerX, pad.top + ch + 35);
+            }
+
+            // Axes
+            ctx.strokeStyle = colors.axis; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top + ch); ctx.lineTo(width - pad.right, pad.top + ch); ctx.stroke();
+
+            // Title
+            ctx.fillStyle = colors.label; ctx.font = '13px -apple-system, BlinkMacSystemFont, sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText(`Box Plot by Group (k=${k}, ◆ = mean, ─ = median)`, width / 2, 18);
+        }
+
+        // ────── Regression Enhancements ──────
+        // Store regression state for prediction
+        let _regState = null;
+
+        function drawResidualPlot(xs, residuals) {
+            const container = document.getElementById('residual-plot-container');
+            container.style.display = 'block';
+            const canvas = document.getElementById('residualplot');
+            const ctx = canvas.getContext('2d');
+            const colors = getChartColors();
+
+            canvas.width = canvas.offsetWidth * devicePixelRatio;
+            canvas.height = canvas.offsetHeight * devicePixelRatio;
+            ctx.scale(devicePixelRatio, devicePixelRatio);
+
+            const width = canvas.offsetWidth, height = canvas.offsetHeight;
+            ctx.clearRect(0, 0, width, height);
+
+            const pad = { top: 30, right: 30, bottom: 40, left: 60 };
+            const cw = width - pad.left - pad.right, ch = height - pad.top - pad.bottom;
+
+            const xMin = Math.min(...xs), xMax = Math.max(...xs);
+            const xRange = xMax - xMin || 1;
+            const xPad2 = xRange * 0.08;
+            const x0 = xMin - xPad2, x1 = xMax + xPad2;
+
+            const absMax = Math.max(...residuals.map(Math.abs)) || 1;
+            const yLim = absMax * 1.2;
+
+            function toX(v) { return pad.left + ((v - x0) / (x1 - x0)) * cw; }
+            function toY(v) { return pad.top + ch / 2 - (v / yLim) * (ch / 2); }
+
+            // Grid
+            ctx.strokeStyle = colors.grid; ctx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = pad.top + (i / 4) * ch;
+                ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(width - pad.right, y); ctx.stroke();
+                const val = yLim - (i / 4) * 2 * yLim;
+                ctx.fillStyle = colors.label; ctx.font = '10px SF Mono, Monaco, monospace'; ctx.textAlign = 'right';
+                ctx.fillText(val.toFixed(1), pad.left - 8, y + 4);
+            }
+
+            // Zero line
+            ctx.strokeStyle = colors.line; ctx.lineWidth = 1.5; ctx.setLineDash([5, 3]);
+            ctx.beginPath(); ctx.moveTo(pad.left, toY(0)); ctx.lineTo(width - pad.right, toY(0)); ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Points
+            for (let i = 0; i < xs.length; i++) {
+                const cx = toX(xs[i]), cy = toY(residuals[i]);
+                ctx.fillStyle = colors.pointFill;
+                ctx.strokeStyle = colors.point;
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+            }
+
+            // Axes
+            ctx.strokeStyle = colors.axis; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top + ch); ctx.lineTo(width - pad.right, pad.top + ch); ctx.stroke();
+
+            // Title
+            ctx.fillStyle = colors.label; ctx.font = '13px -apple-system, BlinkMacSystemFont, sans-serif'; ctx.textAlign = 'center';
+            ctx.fillText('Residual Plot (residuals vs x)', width / 2, 18);
+
+            // X axis labels
+            for (let i = 0; i <= 4; i++) {
+                const x = pad.left + (i / 4) * cw;
+                const xVal = x0 + (i / 4) * (x1 - x0);
+                ctx.fillStyle = colors.label; ctx.font = '10px SF Mono, Monaco, monospace'; ctx.textAlign = 'center';
+                ctx.fillText(xVal.toFixed(1), x, pad.top + ch + 18);
+            }
+        }
+
+        function predictY() {
+            if (!_regState) { alert('Run regression first'); return; }
+            const xNew = parseFloat(document.getElementById('reg-predict-x').value);
+            if (isNaN(xNew)) { alert('Enter a valid x value'); return; }
+
+            const { slope, intercept, se, ssxx, mx, n } = _regState;
+            const yHat = intercept + slope * xNew;
+            const df = n - 2;
+            const tCrit = tCritical(df, 0.05);
+
+            // Standard error of mean prediction
+            const seMean = se * Math.sqrt(1/n + (xNew - mx)**2 / ssxx);
+            const ciLow = yHat - tCrit * seMean;
+            const ciHigh = yHat + tCrit * seMean;
+
+            // Standard error of individual prediction
+            const seInd = se * Math.sqrt(1 + 1/n + (xNew - mx)**2 / ssxx);
+            const piLow = yHat - tCrit * seInd;
+            const piHigh = yHat + tCrit * seInd;
+
+            document.getElementById('reg-pred-y').textContent = yHat.toFixed(4);
+            document.getElementById('reg-pred-ci').textContent = `[${ciLow.toFixed(4)} , ${ciHigh.toFixed(4)}]`;
+            document.getElementById('reg-pred-pi').textContent = `[${piLow.toFixed(4)} , ${piHigh.toFixed(4)}]`;
+            document.getElementById('reg-predict-result').style.display = 'block';
+        }
+
         function drawGofChart(observed, expected, labels) {
             const canvas = document.getElementById('gof-chart');
             const ctx = canvas.getContext('2d');
@@ -1970,7 +2402,7 @@
                 const data = parseData(input);
                 if (data.length > 0) drawHistogram(data);
             }
-            // Redraw scatterplot if regression results exist
+            // Redraw scatterplot + residual plot if regression results exist
             const regEq = document.getElementById('reg-eq').textContent;
             if (regEq !== '-') {
                 const pairs = parsePairs(document.getElementById('reg-data').value);
@@ -1983,6 +2415,21 @@
                     }
                     const slope = ssxy / ssxx, intercept = my - slope * mx, r = ssxy / Math.sqrt(ssxx * ssyy);
                     drawScatterplot(xs, ys, slope, intercept, r);
+                    const residuals = ys.map((y, i) => y - (intercept + slope * xs[i]));
+                    drawResidualPlot(xs, residuals);
+                }
+            }
+            // Redraw box plot if ANOVA results exist
+            const anovaF = document.getElementById('anova-f').textContent;
+            if (anovaF !== '-') {
+                const groups = parseGroupData(document.getElementById('anova-data').value);
+                if (groups.length >= 2) {
+                    const groupStats = groups.map(g => ({
+                        name: g.name, n: g.values.length, mean: mean(g.values), sd: standardDeviation(g.values),
+                        min: Math.min(...g.values), q1: quartile(g.values, 0.25), median: median(g.values),
+                        q3: quartile(g.values, 0.75), max: Math.max(...g.values), values: g.values
+                    }));
+                    drawBoxPlot(groupStats);
                 }
             }
         }
