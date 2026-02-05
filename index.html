@@ -393,6 +393,136 @@
         .footer a { color: var(--text-secondary); text-decoration: none; }
         .footer a:hover { text-decoration: underline; }
         
+        .footer-links { margin-bottom: 8px; }
+        .footer-links a { margin: 0 8px; }
+        .footer-educator {
+            margin-top: 10px;
+            padding: 12px 20px;
+            background: var(--section-bg);
+            border: 1px solid var(--section-border);
+            border-radius: 8px;
+            display: inline-block;
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+        .footer-educator strong { color: var(--text-primary); }
+        
+        /* Feedback widget */
+        .feedback-fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--btn-bg), var(--btn-bg-end));
+            color: white;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 4px 16px var(--btn-shadow);
+            z-index: 1000;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .feedback-fab:hover { transform: scale(1.1); box-shadow: 0 6px 24px var(--btn-shadow); }
+        
+        .feedback-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 1001;
+            animation: fadeIn 0.2s ease;
+        }
+        .feedback-overlay.open { display: flex; align-items: center; justify-content: center; }
+        
+        .feedback-modal {
+            background: var(--container-bg);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 440px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .feedback-modal h3 {
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            margin-bottom: 6px;
+        }
+        .feedback-modal p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 18px;
+        }
+        
+        .feedback-stars {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .feedback-stars button {
+            background: none;
+            border: 2px solid var(--input-border);
+            border-radius: 8px;
+            width: 44px;
+            height: 44px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            color: var(--text-muted);
+        }
+        .feedback-stars button:hover,
+        .feedback-stars button.selected {
+            border-color: var(--btn-bg);
+            background: var(--section-bg);
+            transform: scale(1.1);
+        }
+        .feedback-stars button.selected { color: var(--btn-bg); font-weight: bold; }
+        
+        .feedback-modal textarea {
+            width: 100%;
+            height: 80px;
+            padding: 10px;
+            border: 2px solid var(--input-border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            resize: vertical;
+            font-family: inherit;
+            margin-bottom: 8px;
+        }
+        .feedback-modal textarea:focus { outline: none; border-color: var(--input-focus); }
+        
+        .feedback-context {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+        
+        .feedback-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .feedback-sent {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .feedback-sent .check { font-size: 48px; margin-bottom: 8px; }
+        .feedback-sent p { color: var(--text-secondary); }
+        
+        @media print { .feedback-fab { display: none; } }
+        
         /* Example & Formula buttons */
         .example-btns {
             display: flex;
@@ -1090,7 +1220,43 @@
         </div>
         
         <div class="footer">
-            Built by <a href="https://onyxclaw.substack.com" target="_blank">Onyx</a> · Toggle ☀️/🌙 for light/dark mode · Print-friendly 🖨️
+            <div class="footer-links">
+                Built by <a href="https://onyxclaw.substack.com" target="_blank">Onyx</a> ·
+                <a href="#" onclick="openFeedback(); return false;">Send Feedback</a> ·
+                Toggle ☀️/🌙 for light/dark mode · Print-friendly 🖨️
+            </div>
+            <div class="footer-educator">
+                <strong>📚 For Educators:</strong> StatCalc is free and works offline — ideal for classrooms. 
+                Features example datasets, formula displays, and step-by-step calculations.
+                <br>Using it in your course? <a href="#" onclick="openFeedback(); return false;">I'd love to hear about it</a>.
+            </div>
+        </div>
+    </div>
+    
+    <!-- Feedback Widget -->
+    <button class="feedback-fab" onclick="openFeedback()" title="Send feedback" aria-label="Send feedback">💬</button>
+    
+    <div class="feedback-overlay" id="feedback-overlay" onclick="if(event.target===this)closeFeedback()">
+        <div class="feedback-modal" id="feedback-modal-content">
+            <h3>How's StatCalc working for you?</h3>
+            <p>Your feedback helps prioritize improvements.</p>
+            
+            <div class="feedback-stars" id="feedback-stars">
+                <button onclick="setRating(1)" title="Poor">1</button>
+                <button onclick="setRating(2)" title="Fair">2</button>
+                <button onclick="setRating(3)" title="Good">3</button>
+                <button onclick="setRating(4)" title="Great">4</button>
+                <button onclick="setRating(5)" title="Excellent">5</button>
+            </div>
+            
+            <textarea id="feedback-text" placeholder="What are you using StatCalc for? What's missing? Any bugs?"></textarea>
+            
+            <div class="feedback-context" id="feedback-context"></div>
+            
+            <div class="feedback-actions">
+                <button class="btn-secondary" onclick="closeFeedback()">Cancel</button>
+                <button class="btn" onclick="submitFeedback()">Send Feedback</button>
+            </div>
         </div>
     </div>
 
@@ -2435,6 +2601,135 @@
         }
         
         window.addEventListener('resize', redrawCharts);
+        
+        // ────── Module Usage Tracking ──────
+        (function() {
+            const STORAGE_KEY = 'statcalc-usage';
+            function getUsage() {
+                try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+                catch { return {}; }
+            }
+            function trackModule(name) {
+                const usage = getUsage();
+                if (!usage[name]) usage[name] = { visits: 0, calcs: 0, first: new Date().toISOString() };
+                usage[name].visits++;
+                usage[name].last = new Date().toISOString();
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(usage));
+            }
+            function trackCalc(name) {
+                const usage = getUsage();
+                if (!usage[name]) usage[name] = { visits: 0, calcs: 0, first: new Date().toISOString() };
+                usage[name].calcs++;
+                usage[name].last = new Date().toISOString();
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(usage));
+            }
+            // Override switchTab
+            const origSwitchTab = window.switchTab;
+            window.switchTab = function(name) {
+                trackModule(name);
+                if (typeof origSwitchTab === 'function') origSwitchTab(name);
+                else {
+                    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.getElementById('tab-' + name).classList.add('active');
+                    document.querySelectorAll('.tab-btn').forEach(b => {
+                        if (b.getAttribute('onclick') === "switchTab('" + name + "')") b.classList.add('active');
+                    });
+                }
+            };
+            // Track calculations by hooking into calc buttons
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('.btn');
+                if (!btn) return;
+                const text = btn.textContent.toLowerCase();
+                if (text.includes('calculate') || text.includes('compute') || text.includes('analyze')) {
+                    const tab = btn.closest('.tab-content');
+                    if (tab) {
+                        const tabName = tab.id.replace('tab-', '');
+                        trackCalc(tabName);
+                    }
+                }
+            });
+            // Track initial page load
+            trackModule('basics');
+            // Expose for feedback
+            window._getUsageSummary = function() {
+                const u = getUsage();
+                const parts = [];
+                for (const [mod, data] of Object.entries(u)) {
+                    parts.push(mod + ': ' + data.visits + ' visits, ' + data.calcs + ' calcs');
+                }
+                return parts.join('; ') || 'No usage data';
+            };
+        })();
+        
+        // ────── Feedback Widget ──────
+        let _feedbackRating = 0;
+        
+        // Store original modal HTML on first load
+        let _feedbackFormHTML = '';
+        document.addEventListener('DOMContentLoaded', function() {
+            _feedbackFormHTML = document.getElementById('feedback-modal-content').innerHTML;
+        });
+        // Fallback if DOMContentLoaded already fired
+        if (!_feedbackFormHTML && document.getElementById('feedback-modal-content')) {
+            _feedbackFormHTML = document.getElementById('feedback-modal-content').innerHTML;
+        }
+        
+        function openFeedback() {
+            _feedbackRating = 0;
+            // Restore original form
+            if (_feedbackFormHTML) {
+                document.getElementById('feedback-modal-content').innerHTML = _feedbackFormHTML;
+            }
+            document.querySelectorAll('#feedback-stars button').forEach(b => b.classList.remove('selected'));
+            const ta = document.getElementById('feedback-text');
+            if (ta) ta.value = '';
+            const ctx = document.getElementById('feedback-context');
+            if (ctx) ctx.textContent = 'Module usage: ' + window._getUsageSummary();
+            document.getElementById('feedback-overlay').classList.add('open');
+        }
+        
+        function closeFeedback() {
+            document.getElementById('feedback-overlay').classList.remove('open');
+        }
+        
+        function setRating(n) {
+            _feedbackRating = n;
+            document.querySelectorAll('#feedback-stars button').forEach((b, i) => {
+                b.classList.toggle('selected', i < n);
+            });
+        }
+        
+        function submitFeedback() {
+            const text = document.getElementById('feedback-text').value.trim();
+            const usage = window._getUsageSummary();
+            const rating = _feedbackRating;
+            
+            // Build mailto
+            const subject = encodeURIComponent('StatCalc Feedback' + (rating ? ' (' + rating + '/5)' : ''));
+            const body = encodeURIComponent(
+                (rating ? 'Rating: ' + rating + '/5\n\n' : '') +
+                (text ? text + '\n\n' : '') +
+                '---\nModule usage: ' + usage + '\n' +
+                'Theme: ' + document.documentElement.getAttribute('data-theme') + '\n' +
+                'Screen: ' + window.innerWidth + 'x' + window.innerHeight + '\n' +
+                'URL: ' + window.location.href
+            );
+            
+            window.open('mailto:echomoltinsson@gmail.com?subject=' + subject + '&body=' + body, '_self');
+            
+            // Show thank you
+            const modal = document.getElementById('feedback-modal-content');
+            modal.innerHTML = '<div class="feedback-sent"><div class="check">✅</div><h3>Thanks for the feedback!</h3><p>Your email client should open with the details. If it didn\'t, feel free to email echomoltinsson@gmail.com directly.</p><br><button class="btn-secondary" onclick="closeFeedback()">Close</button></div>';
+            
+            // Save locally too
+            try {
+                const history = JSON.parse(localStorage.getItem('statcalc-feedback') || '[]');
+                history.push({ rating, text, usage, ts: new Date().toISOString() });
+                localStorage.setItem('statcalc-feedback', JSON.stringify(history));
+            } catch(e) {}
+        }
     </script>
 </body>
 </html>
